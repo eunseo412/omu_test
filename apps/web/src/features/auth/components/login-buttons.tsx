@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { hasSupabase } from "@/lib/env";
 
 type Provider = "kakao" | "google";
 
@@ -11,7 +12,7 @@ export function LoginButtons({ next = "/" }: { next?: string }) {
 
   async function signIn(provider: Provider) {
     setError(null);
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    if (!hasSupabase()) {
       setError("Supabase 환경변수가 설정되지 않았습니다 (.env.local)");
       return;
     }

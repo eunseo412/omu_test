@@ -8,6 +8,7 @@ import {
   itemInputSchema,
 } from "@omu/core";
 import { createClient } from "@/lib/supabase/client";
+import { hasSupabase } from "@/lib/env";
 import { compressImage } from "@/lib/image";
 import { createItem } from "../actions";
 
@@ -104,7 +105,7 @@ export function ItemForm() {
       return;
     }
 
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    if (!hasSupabase()) {
       setFormError("Supabase 환경변수가 설정되지 않았습니다 (.env.local).");
       return;
     }
