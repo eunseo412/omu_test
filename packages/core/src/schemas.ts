@@ -44,3 +44,11 @@ export const reviewInputSchema = z.object({
   comment: z.string().max(300).optional(),
 });
 export type ReviewInput = z.infer<typeof reviewInputSchema>;
+
+export const CATEGORY_LABELS: Record<(typeof ITEM_CATEGORIES)[number], string> = {
+  top: "상의", bottom: "하의", outer: "아우터", dress: "원피스", shoes: "신발", bag: "가방", acc: "액세서리",
+};
+export const HANDOFF_LABELS: Record<(typeof HANDOFF_METHODS)[number], string> = {
+  in_person: "직거래(대면)", delivery: "택배",
+};
+export const MAX_ITEM_IMAGES = 8;
