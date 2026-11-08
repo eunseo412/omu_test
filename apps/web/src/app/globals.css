@@ -18,3 +18,9 @@ body {
 .pt-safe {
   padding-top: env(safe-area-inset-top);
 }
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

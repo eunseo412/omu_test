@@ -18,6 +18,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
+      <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+      </head>
       <body className="bg-neutral-100 text-neutral-900 antialiased">
         {/* 데스크톱에서도 모바일 폭으로 보여서 앱과 같은 경험 유지 */}
         <div className="mx-auto min-h-dvh max-w-[480px] bg-white shadow-sm">{children}</div>
