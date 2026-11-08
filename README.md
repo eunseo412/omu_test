@@ -21,6 +21,19 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
    - Site URL: `http://localhost:3000` (배포 후 Vercel 주소로 변경)
    - Redirect URLs: `http://localhost:3000/auth/callback`, `https://<배포주소>/auth/callback`
 
+### 이메일 인증 로그인 (설정 없이 바로 동작)
+Supabase에 기본으로 켜져 있습니다. 메일의 **링크**를 누르거나 **인증 코드**를 입력하면 로그인되고, 처음 쓰는 이메일은 자동 가입됩니다.
+
+메일에 인증 코드가 보이게 하려면 (권장: 휴대폰 메일 앱에서 링크를 열면 다른 브라우저로 열려 실패할 수 있음)
+Authentication › Emails › Templates 에서 **Magic Link**와 **Confirm signup** 템플릿 본문에 아래를 추가하세요.
+
+```html
+<p>인증 코드: <strong>{{ .Token }}</strong></p>
+```
+
+> 기본 메일 발송은 시간당 몇 통으로 제한됩니다. 베타 사용자에게 배포하기 전에 Authentication › Emails › SMTP Settings에서
+> Resend 등 외부 SMTP를 연결하세요.
+
 ### 카카오 로그인
 1. [developers.kakao.com](https://developers.kakao.com) › 내 애플리케이션 › 앱 생성
 2. 앱 설정 › 플랫폼 › Web 사이트 도메인에 `http://localhost:3000` 등록
