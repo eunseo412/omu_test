@@ -1,5 +1,20 @@
-// 사람(옷장) 프로필: 추구미 태그, 체형, 신뢰도 온도, 옷장 그리드, 착장
-export default async function ProfilePage({ params }: { params: Promise<{ handle: string }> }) {
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getProfile } from "@/features/profile/queries";
+import { ProfileView } from "@/features/profile/components/profile-view";
+
+export const dynamic = "force-dynamic";
+
+type Props = { params: Promise<{ handle: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = await params;
-  return <main className="p-4">@{handle}의 옷장</main>;
+  return { title: `@${decodeURIComponent(handle)}의 옷장` };
+}
+
+export default async function ProfilePage({ params }: Props) {
+  const { handle } = await params;
+  const profile = await getProfile(decodeURIComponent(handle));
+  if (!profile) notFound();
+  return <ProfileView p={profile} />;
 }

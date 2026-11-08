@@ -52,3 +52,18 @@ export const HANDOFF_LABELS: Record<(typeof HANDOFF_METHODS)[number], string> = 
   in_person: "직거래(대면)", delivery: "택배",
 };
 export const MAX_ITEM_IMAGES = 8;
+
+/** 프로필 편집. 체형 정보는 '나와 비슷한 사람' 찾기에 쓰인다. */
+export const HANDLE_RE = /^[a-z0-9_.]{3,20}$/;
+export const profileInputSchema = z.object({
+  displayName: z.string().trim().min(1, "이름을 입력해 주세요.").max(20, "이름은 20자 이하로 입력해 주세요."),
+  handle: z.string().trim().toLowerCase().regex(HANDLE_RE, "아이디는 영문 소문자·숫자·_·. 3~20자로 입력해 주세요."),
+  bio: z.string().trim().max(150, "소개는 150자 이하로 입력해 주세요.").default(""),
+  styleTags: z.array(z.enum(STYLE_TAGS)).max(5, "추구미는 최대 5개까지 고를 수 있어요.").default([]),
+  heightCm: z.number().int().min(120, "키를 확인해 주세요.").max(230, "키를 확인해 주세요.").nullable().default(null),
+  topSize: z.enum(ITEM_SIZES).nullable().default(null),
+  bottomSize: z.enum(ITEM_SIZES).nullable().default(null),
+  shoeSize: z.number().int().min(200, "신발 사이즈는 mm로 입력해 주세요.").max(320, "신발 사이즈는 mm로 입력해 주세요.").nullable().default(null),
+  avatarPath: z.string().max(300).nullable().default(null),
+});
+export type ProfileInput = z.infer<typeof profileInputSchema>;

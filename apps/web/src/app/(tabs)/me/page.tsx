@@ -25,10 +25,22 @@ export default async function MePage() {
               신뢰도 온도 <b className="text-accent">{Number(profile?.trust_temp ?? 36.5).toFixed(1)}℃</b>
             </p>
           </div>
-          {profile && (
-            <Link href={`/u/${profile.handle}`} className="block rounded-xl border border-neutral-200 p-3 text-sm">
-              내 옷장 보기
+          {profile?.handle.startsWith("user_") && (
+            <Link href="/me/edit" className="block rounded-xl bg-orange-50 p-3 text-sm">
+              <b className="text-accent">프로필을 완성해 주세요</b>
+              <br />
+              <span className="text-neutral-600">이름·아이디·추구미를 정하면 다른 사람이 내 옷장을 찾기 쉬워져요.</span>
             </Link>
+          )}
+          {profile && (
+            <div className="grid grid-cols-2 gap-2">
+              <Link href={`/u/${profile.handle}`} className="rounded-xl border border-neutral-200 p-3 text-center text-sm font-medium">
+                내 옷장 보기
+              </Link>
+              <Link href="/me/edit" className="rounded-xl border border-neutral-200 p-3 text-center text-sm font-medium">
+                프로필 편집
+              </Link>
+            </div>
           )}
           <form action={signOut}>
             <button className="text-sm text-neutral-500 underline">로그아웃</button>
