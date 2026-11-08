@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --color-brand: #1f1f1f;
+  --color-accent: #ff6b4a; /* 신뢰도 온도·CTA 포인트 */
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  overscroll-behavior-y: none; /* 앱처럼: 바운스 스크롤 억제 */
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
