@@ -112,27 +112,30 @@ export type ItemDetail = ItemCardData & {
   handoffMethods: string[];
   images: string[];
   ownerTrustTemp: number;
+  ownerId: string;
+  isMine: boolean;
 };
 
 export async function getItem(id: string): Promise<ItemDetail | null> {
   if (id.startsWith("sample-")) {
     const s = SAMPLE_ITEMS.find((i) => i.id === id);
     if (!s) return null;
-    return { ...s, description: "샘플 아이템입니다. 실제 옷이 등록되면 이 자리에 설명이 표시됩니다.", category: "top", deposit: 30000, minDays: 1, maxDays: 7, handoffMethods: ["in_person"], images: [], ownerTrustTemp: 37.2 };
+    return { ...s, description: "샘플 아이템입니다. 실제 옷이 등록되면 이 자리에 설명이 표시됩니다.", category: "top", deposit: 30000, minDays: 1, maxDays: 7, handoffMethods: ["in_person"], images: [], ownerTrustTemp: 37.2, ownerId: "", isMine: false };
   }
   if (!hasSupabase()) return null;
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const { data } = await supabase
     .from("items")
     .select(
       "id,title,brand,size,price_per_day,style_tags,description,category,deposit,min_days,max_days,handoff_methods," +
-        "item_images(path,sort_order),owner:profiles!items_owner_id_fkey(handle,display_name,avatar_url,trust_temp)",
+        "owner_id,item_images(path,sort_order),owner:profiles!items_owner_id_fkey(handle,display_name,avatar_url,trust_temp)",
     )
     .eq("id", id)
     .maybeSingle();
   if (!data) return null;
   const r = data as unknown as ItemRow & {
-    description: string; category: string; deposit: number; min_days: number; max_days: number; handoff_methods: string[];
+    owner_id: string; description: string; category: string; deposit: number; min_days: number; max_days: number; handoff_methods: string[];
     owner: ItemRow["owner"] & { trust_temp: number };
   };
   const card = toCard(r, 0);
@@ -146,5 +149,7 @@ export async function getItem(id: string): Promise<ItemDetail | null> {
     handoffMethods: r.handoff_methods,
     images: [...r.item_images].sort((a, b) => a.sort_order - b.sort_order).map((im) => publicImageUrl("items", im.path)!),
     ownerTrustTemp: Number(r.owner?.trust_temp ?? 36.5),
+    ownerId: r.owner_id,
+    isMine: user?.id === r.owner_id,
   };
 }

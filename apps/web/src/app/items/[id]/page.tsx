@@ -49,9 +49,17 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
           <p className="text-[17px] font-bold">{formatWon(item.pricePerDay)}<span className="text-sm font-normal">/일</span></p>
           <p className="text-[12px] text-neutral-500">보증금 {formatWon(item.deposit)}</p>
         </div>
-        <button className="rounded-xl bg-neutral-900 px-6 py-3 text-[15px] font-semibold text-white" disabled={item.id.startsWith("sample-")}>
-          대여 신청
-        </button>
+        {item.isMine ? (
+          <Link href={`/u/${item.owner.handle}`} className="rounded-xl border border-neutral-300 px-5 py-3 text-[15px] font-semibold">
+            내 옷장으로
+          </Link>
+        ) : item.id.startsWith("sample-") ? (
+          <span className="rounded-xl bg-neutral-300 px-6 py-3 text-[15px] font-semibold text-white">샘플 옷</span>
+        ) : (
+          <Link href={`/items/${item.id}/rent`} className="rounded-xl bg-neutral-900 px-6 py-3 text-[15px] font-semibold text-white">
+            대여 신청
+          </Link>
+        )}
       </div>
     </main>
   );

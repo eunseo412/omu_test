@@ -61,3 +61,39 @@ export function rentalDays(startDate: string, endDate: string): number {
 export function rentalFee(pricePerDay: number, startDate: string, endDate: string): number {
   return pricePerDay * rentalDays(startDate, endDate);
 }
+
+export const RENTAL_STATUS_LABELS: Record<RentalStatus, string> = {
+  requested: "수락 대기",
+  accepted: "전달 대기",
+  rejected: "거절됨",
+  cancelled: "취소됨",
+  handed_over: "대여 중",
+  returned: "반납 확인 대기",
+  disputed: "문제 확인 중",
+  completed: "완료",
+};
+
+/** 이 사람이 지금 할 수 있는 상태 변경 목록 */
+export function availableTransitions(status: RentalStatus, actor: RentalActor): RentalStatus[] {
+  return RENTAL_TRANSITIONS[status].filter((t) => t.by.includes(actor)).map((t) => t.to);
+}
+
+/** 상대를 기다리는 게 아니라 '내가' 다음 행동을 해야 하는 상태인지 (취소는 제외) */
+export function isMyTurn(status: RentalStatus, actor: RentalActor): boolean {
+  return availableTransitions(status, actor).some((s) => s !== "cancelled");
+}
+
+export function rangesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
+  return aStart <= bEnd && bStart <= aEnd; // YYYY-MM-DD 문자열 비교
+}
+
+/** 한국 시간 기준 오늘 (YYYY-MM-DD) */
+export function todayKST(now: Date = new Date()): string {
+  return now.toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+}
+
+export function addDays(date: string, days: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}

@@ -1,5 +1,16 @@
-// 거래 상세: 상태 타임라인, 인도/반납 사진, 1:1 채팅, 반납 승인
+import { notFound, redirect } from "next/navigation";
+import { getRental } from "@/features/rental/queries";
+import { RentalDetailView } from "@/features/rental/components/rental-detail-view";
+import { hasSupabase } from "@/lib/env";
+
+export const dynamic = "force-dynamic";
+export const metadata = { title: "거래 상세" };
+
 export default async function RentalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <main className="p-4">거래 {id}</main>;
+  if (!hasSupabase()) redirect("/rentals");
+  if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
+  const rental = await getRental(id);
+  if (!rental) notFound();
+  return <RentalDetailView r={rental} />;
 }

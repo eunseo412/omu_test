@@ -34,8 +34,17 @@ requested ─┬─> accepted ──> handed_over ──> returned ─┬─> co
 ## 베타 지표 (rental_events로 계산)
 신청→수락 전환율, 수락→완료율, 평균 대여 기간·가격(카테고리별), 재대여율, 반납 지연률, 분쟁률.
 
+## 신뢰도 온도 (core/trust.ts ↔ SQL 동일 규칙)
+- 거래 완료: 양쪽 +0.1 (트리거 `rental_completed_trust`)
+- 상호 평가: (평균 별점 − 3) × 0.2 → 상대에게 (`submit_review`)
+- 반납 지연·귀책 분쟁 감점은 운영 기준이 정해지면 추가
+
+## 운영 (베타)
+- 분쟁(`disputed`) 해결: 관리자가 SQL로 `update rentals set status='completed'` 후 `rental_events`에 기록
+- 결제·보증금은 앱 밖에서 직접 주고받음 (`payments` 테이블은 PG 연동 시 사용)
+
 ## TODO
-- `rental-proofs` 버킷 읽기 정책(거래 당사자만), 이미지 리사이즈
-- 신뢰도 온도 갱신 트리거(`reviews`/`rental_events` → `profiles.trust_temp`, 로직은 core/trust.ts 기준)
+- 알림 (새 신청·수락·채팅) — 웹 푸시 또는 카카오 알림톡
+- 반납 지연 자동 감점, 관리자 분쟁 처리 화면
 - Supabase 타입 생성 (`supabase gen types typescript`) → `packages/core` 또는 `packages/db`
 - 이용약관·개인정보처리방침·통신판매중개 고지

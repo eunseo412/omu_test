@@ -16,7 +16,10 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
 
 1. [supabase.com](https://supabase.com)에서 프로젝트 생성 → Project Settings › API 에서
    `Project URL`, `anon public` 키를 `apps/web/.env.local`에 입력
-2. SQL Editor에서 `supabase/migrations/20261108000000_init.sql` 내용을 실행 (테이블·RLS·RPC·스토리지 버킷 생성)
+2. SQL Editor에서 `supabase/migrations/` 폴더의 SQL 파일을 **날짜 순서대로** 실행
+   - `20261108000000_init.sql` (테이블·RLS·RPC·스토리지 버킷)
+   - `20261109000000_rental_flow.sql` (대여 흐름·평가·신뢰도·채팅 실시간)
+   - 새 파일이 추가되면 그 파일만 추가로 실행하면 됩니다.
 3. Authentication › URL Configuration
    - Site URL: `http://localhost:3000` (배포 후 Vercel 주소로 변경)
    - Redirect URLs: 접속하는 **모든 주소**를 등록해야 합니다. 여기 없는 주소에서 로그인하면 Site URL로 돌아가

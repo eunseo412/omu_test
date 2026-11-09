@@ -36,3 +36,30 @@ describe("trust temperature", () => {
     expect(applySignal(0.5, { kind: "disputed_at_fault" })).toBe(0);
   });
 });
+
+import { addDays, availableTransitions, isMyTurn, rangesOverlap, todayKST } from "./rental";
+
+describe("rental helpers", () => {
+  it("lists actions per actor", () => {
+    expect(availableTransitions("requested", "owner")).toEqual(["accepted", "rejected", "cancelled"]);
+    expect(availableTransitions("requested", "renter")).toEqual(["cancelled"]);
+    expect(availableTransitions("handed_over", "renter")).toEqual(["returned"]);
+  });
+  it("my turn excludes cancel-only", () => {
+    expect(isMyTurn("requested", "renter")).toBe(false);
+    expect(isMyTurn("requested", "owner")).toBe(true);
+    expect(isMyTurn("returned", "owner")).toBe(true);
+    expect(isMyTurn("returned", "renter")).toBe(false);
+  });
+  it("overlap is inclusive", () => {
+    expect(rangesOverlap("2026-11-10", "2026-11-12", "2026-11-12", "2026-11-14")).toBe(true);
+    expect(rangesOverlap("2026-11-10", "2026-11-12", "2026-11-13", "2026-11-14")).toBe(false);
+  });
+  it("todayKST uses Korea time", () => {
+    // 2026-11-09 16:00 UTC = 2026-11-10 01:00 KST
+    expect(todayKST(new Date("2026-11-09T16:00:00Z"))).toBe("2026-11-10");
+  });
+  it("addDays crosses months", () => {
+    expect(addDays("2026-11-29", 3)).toBe("2026-12-02");
+  });
+});
