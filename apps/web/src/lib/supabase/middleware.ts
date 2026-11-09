@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from "@/lib/env";
 
-const PROTECTED = ["/closet", "/rentals", "/me"];
+const PROTECTED = ["/closet", "/rentals", "/me", "/notifications"];
 
 export async function updateSession(request: NextRequest) {
   // 인증 메일/OAuth가 /auth/callback이 아닌 곳(예: Site URL 루트 "/?code=...")으로

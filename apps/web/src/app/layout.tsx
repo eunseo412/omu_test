@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ServiceWorkerRegister } from "@/components/pwa/sw-register";
 
 export const metadata: Metadata = {
   title: { default: "O:MU 오늘의 mood", template: "%s · O:MU" },
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-neutral-100 text-neutral-900 antialiased">
         {/* 데스크톱에서도 모바일 폭으로 보여서 앱과 같은 경험 유지 */}
         <div className="mx-auto min-h-dvh max-w-[480px] bg-white shadow-sm">{children}</div>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

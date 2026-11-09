@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppHeader } from "@/components/layout/app-header";
 import { signOut } from "@/features/auth/actions";
+import { PushToggle } from "@/features/notifications/components/push-toggle";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabase } from "@/lib/env";
 
@@ -42,6 +43,9 @@ export default async function MePage() {
               </Link>
             </div>
           )}
+          <div className="-mx-4">
+            <PushToggle />
+          </div>
           <form action={signOut}>
             <button className="text-sm text-neutral-500 underline">로그아웃</button>
           </form>

@@ -7,7 +7,8 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "vapid": "pnpm --filter @omu/web exec web-push generate-vapid-keys"
   },
   "devDependencies": {
     "turbo": "^2.5.0",

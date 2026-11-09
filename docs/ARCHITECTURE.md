@@ -43,8 +43,17 @@ requested ─┬─> accepted ──> handed_over ──> returned ─┬─> co
 - 분쟁(`disputed`) 해결: 관리자가 SQL로 `update rentals set status='completed'` 후 `rental_events`에 기록
 - 결제·보증금은 앱 밖에서 직접 주고받음 (`payments` 테이블은 PG 연동 시 사용)
 
+## 알림
+- `rental_events`·`messages` INSERT 트리거 → 상대방 `notifications` 행 생성 (문구는 SQL 한 곳에서 관리)
+  - 안 읽은 채팅 알림은 새로 만들지 않고 갱신 → 알림함 도배 방지
+- 웹: 종 배지(Realtime) + `/notifications`. 거래 화면을 열면 그 거래 알림 자동 읽음
+- 웹 푸시: 서버 액션 성공 후 `after()`에서 상대의 최신 알림을 `web-push`로 전송 (`features/notifications/push.ts`)
+  - 상대의 구독 조회에 서비스 롤 키 사용, 만료 구독(404/410) 자동 삭제
+  - VAPID/서비스 롤 키가 없으면 푸시만 건너뛰고 앱 안 알림은 그대로 동작
+
 ## TODO
-- 알림 (새 신청·수락·채팅) — 웹 푸시 또는 카카오 알림톡
+- 반납일 하루 전 리마인더 (pg_cron 또는 Vercel Cron)
+- 카카오 알림톡 (정식 서비스 단계)
 - 반납 지연 자동 감점, 관리자 분쟁 처리 화면
 - Supabase 타입 생성 (`supabase gen types typescript`) → `packages/core` 또는 `packages/db`
 - 이용약관·개인정보처리방침·통신판매중개 고지

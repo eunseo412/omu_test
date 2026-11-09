@@ -19,6 +19,7 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
 2. SQL Editor에서 `supabase/migrations/` 폴더의 SQL 파일을 **날짜 순서대로** 실행
    - `20261108000000_init.sql` (테이블·RLS·RPC·스토리지 버킷)
    - `20261109000000_rental_flow.sql` (대여 흐름·평가·신뢰도·채팅 실시간)
+   - `20261110000000_notifications.sql` (알림·푸시 구독)
    - 새 파일이 추가되면 그 파일만 추가로 실행하면 됩니다.
 3. Authentication › URL Configuration
    - Site URL: `http://localhost:3000` (배포 후 Vercel 주소로 변경)
@@ -27,6 +28,21 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
      - `http://localhost:3000/**`
      - 같은 와이파이의 다른 기기에서 접속: `http://<내 PC IP>:3000/**` (예: `http://192.168.0.12:3000/**`)
      - Vercel 배포: `https://<프로젝트>.vercel.app/**`, 미리보기 배포까지 허용하려면 `https://*-<팀>.vercel.app/**`
+
+### 알림
+- **앱 안 알림**은 SQL만 실행하면 바로 동작합니다 (종 아이콘·알림 목록, 실시간 배지).
+- **휴대폰 푸시 알림**은 아래 환경변수가 필요합니다. 로컬은 `apps/web/.env.local`, 배포는 Vercel › Settings › Environment Variables.
+  1. 키 생성: `pnpm vapid` → 출력된 Public Key / Private Key 사용
+  2. 환경변수 추가
+     | 이름 | 값 |
+     |---|---|
+     | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Public Key |
+     | `VAPID_PRIVATE_KEY` | Private Key (공개 금지) |
+     | `VAPID_SUBJECT` | `mailto:연락받을이메일` |
+     | `SUPABASE_SERVICE_ROLE_KEY` | Supabase Secret key (공개 금지) |
+  3. Vercel은 환경변수를 바꾼 뒤 **Redeploy** 해야 반영됩니다.
+- 휴대폰에서 알림 탭(또는 MY)의 **알림 켜기**를 누르면 그 기기로 알림이 옵니다.
+  아이폰은 Safari에서 **홈 화면에 추가**한 앱에서만 켤 수 있어요 (iOS 16.4+).
 
 ### 이메일 인증 로그인 (설정 없이 바로 동작)
 Supabase에 기본으로 켜져 있습니다. 메일의 **링크**를 누르거나 **인증 코드**를 입력하면 로그인되고, 처음 쓰는 이메일은 자동 가입됩니다.

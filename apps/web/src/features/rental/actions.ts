@@ -3,6 +3,14 @@
 import { RENTAL_STATUSES, rentalRequestSchema, reviewInputSchema, type RentalStatus } from "@omu/core";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { pushLatestNotification } from "@/features/notifications/push";
+
+/** 거래 상대(알림 받을 사람) 찾기 — 당사자만 rentals를 읽을 수 있다 */
+async function counterpartOf(supabase: Awaited<ReturnType<typeof createClient>>, rentalId: string, me: string) {
+  const { data } = await supabase.from("rentals").select("owner_id,renter_id").eq("id", rentalId).maybeSingle();
+  if (!data) return null;
+  return data.owner_id === me ? data.renter_id : data.owner_id;
+}
 
 export type Result<T = undefined> = { ok: true; data?: T } | { ok: false; error: string };
 
@@ -40,8 +48,12 @@ export async function requestRental(raw: unknown): Promise<Result<{ id: string }
     p_message: v.message?.trim() || null,
   });
   if (error) return { ok: false, error: friendly(error.message) };
+  const rentalId = data as string;
+  const { data: { user } } = await supabase.auth.getUser();
+  const to = user ? await counterpartOf(supabase, rentalId, user.id) : null;
+  if (to) pushLatestNotification(to, rentalId);
   revalidatePath("/rentals");
-  return { ok: true, data: { id: data as string } };
+  return { ok: true, data: { id: rentalId } };
 }
 
 export async function transitionRental(
@@ -61,6 +73,8 @@ export async function transitionRental(
     p_photos: photoPaths,
   });
   if (error) return { ok: false, error: friendly(error.message) };
+  const recipient = await counterpartOf(supabase, rentalId, user.id);
+  if (recipient) pushLatestNotification(recipient, rentalId);
   revalidatePath(`/rentals/${rentalId}`);
   revalidatePath("/rentals");
   return { ok: true };
@@ -81,4 +95,24 @@ export async function submitReview(raw: unknown): Promise<Result> {
   if (error) return { ok: false, error: friendly(error.message) };
   revalidatePath(`/rentals/${v.rentalId}`);
   return { ok: true };
+}
+
+export type SentMessage = { id: number; senderId: string; body: string; createdAt: string };
+
+/** 채팅 전송: DB 트리거가 상대 알림을 만들고, 여기서 휴대폰 푸시를 보낸다 */
+export async function sendMessage(rentalId: string, raw: string): Promise<Result<SentMessage>> {
+  const body = raw.trim();
+  if (!body || body.length > 1000) return { ok: false, error: "메시지는 1~1000자로 입력해 주세요." };
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "로그인이 필요해요." };
+  const { data, error } = await supabase
+    .from("messages")
+    .insert({ rental_id: rentalId, sender_id: user.id, body })
+    .select("id,sender_id,body,created_at")
+    .single();
+  if (error || !data) return { ok: false, error: "메시지를 보내지 못했어요." };
+  const to = await counterpartOf(supabase, rentalId, user.id);
+  if (to) pushLatestNotification(to, rentalId);
+  return { ok: true, data: { id: data.id, senderId: data.sender_id, body: data.body, createdAt: data.created_at } };
 }

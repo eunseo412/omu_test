@@ -19,3 +19,13 @@ export function formatDateTime(iso: string): string {
   const g = (t: string) => p.find((x) => x.type === t)?.value ?? "";
   return `${g("month")}/${g("day")} ${g("hour")}:${g("minute")}`;
 }
+
+/** "방금", "5분 전", "3시간 전", "2일 전", 그 이상은 "11/12" */
+export function formatRelative(iso: string, now: Date = new Date()): string {
+  const sec = Math.floor((now.getTime() - new Date(iso).getTime()) / 1000);
+  if (sec < 60) return "방금";
+  if (sec < 3600) return `${Math.floor(sec / 60)}분 전`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}시간 전`;
+  if (sec < 86400 * 7) return `${Math.floor(sec / 86400)}일 전`;
+  return formatDateTime(iso).split(" ")[0];
+}

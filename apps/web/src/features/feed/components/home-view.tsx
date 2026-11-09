@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { ItemPosterCard, ItemTile } from "@/components/ui/item-card";
 import { ItemImage } from "@/components/ui/item-image";
 import { Rail, Section } from "@/components/ui/section";
@@ -13,9 +14,12 @@ export function HomeView({ data }: { data: HomeData }) {
           <span className="text-[22px] font-black tracking-tighter">
             O<span className="text-accent">:</span>MU
           </span>
-          <Link href="/explore" aria-label="검색" className="p-2">
-            <Search className="h-5 w-5" />
-          </Link>
+          <div className="-mr-2 flex items-center">
+            <Link href="/explore" aria-label="검색" className="p-2">
+              <Search className="h-5 w-5" />
+            </Link>
+            <NotificationBell />
+          </div>
         </div>
       </header>
 

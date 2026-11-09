@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/env";
 import { formatDateTime } from "@/lib/date";
 import type { ChatMessage } from "../types";
+import { sendMessage } from "../actions";
 
 type Row = { id: number; sender_id: string; body: string; created_at: string };
 const toMsg = (r: Row): ChatMessage => ({ id: r.id, senderId: r.sender_id, body: r.body, createdAt: r.created_at });
@@ -51,14 +52,10 @@ export function RentalChat({ rentalId, myId, counterpartName, initial }: { renta
     if (!body || sending) return;
     setSending(true);
     setError(null);
-    const { data, error } = await createClient()
-      .from("messages")
-      .insert({ rental_id: rentalId, sender_id: myId, body })
-      .select("id,sender_id,body,created_at")
-      .single();
+    const res = await sendMessage(rentalId, body);
     setSending(false);
-    if (error) return setError("메시지를 보내지 못했어요.");
-    add(toMsg(data as Row));
+    if (!res.ok) return setError(res.error);
+    add(res.data!);
     setText("");
   }
 
