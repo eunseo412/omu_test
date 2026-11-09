@@ -47,12 +47,19 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
 ### 이메일 인증 로그인 (설정 없이 바로 동작)
 Supabase에 기본으로 켜져 있습니다. 메일의 **링크**를 누르거나 **인증 코드**를 입력하면 로그인되고, 처음 쓰는 이메일은 자동 가입됩니다.
 
-메일에 인증 코드가 보이게 하려면 (권장: 휴대폰 메일 앱에서 링크를 열면 다른 브라우저로 열려 실패할 수 있음)
-Authentication › Emails › Templates 에서 **Magic Link**와 **Confirm signup** 템플릿 본문에 아래를 추가하세요.
+**메일 템플릿 설정 (필수)** — Authentication › Emails › Templates 에서 **Magic Link**와 **Confirm signup** 본문을 아래로 바꾸세요.
+기본 템플릿 링크는 "요청한 브라우저"에서만 열려서, Gmail 앱 등에서 누르면 로그인이 실패합니다.
+아래 링크(token_hash 방식)는 어느 브라우저에서 열어도 되고, 인증 코드도 함께 보여줍니다.
 
 ```html
+<h2>O:MU 로그인</h2>
+<p>아래 버튼을 누르거나, 앱에 인증 코드를 입력하세요.</p>
+<p><a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email&next=/">로그인하기</a></p>
 <p>인증 코드: <strong>{{ .Token }}</strong></p>
+<p>요청하지 않았다면 이 메일을 무시하세요.</p>
 ```
+
+> `{{ .SiteURL }}`은 URL Configuration의 Site URL(배포 주소)입니다. Site URL이 Vercel 주소인지 확인하세요.
 
 > 기본 메일 발송은 시간당 몇 통으로 제한됩니다. 베타 사용자에게 배포하기 전에 Authentication › Emails › SMTP Settings에서
 > Resend 등 외부 SMTP를 연결하세요.

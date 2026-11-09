@@ -1,5 +1,6 @@
 import { EmailLogin } from "@/features/auth/components/email-login";
 import { LoginButtons } from "@/features/auth/components/login-buttons";
+import { LoginError } from "@/features/auth/components/login-error";
 
 export const metadata = { title: "로그인" };
 
@@ -19,13 +20,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </p>
       </div>
       <div className="pb-safe mb-10 space-y-3">
-        {error && (
-          <p className="text-center text-[13px] text-red-600">
-            로그인에 실패했어요. 메일 링크는 요청한 브라우저에서 열어야 해요.
-            <br />
-            어려우면 메일의 인증 코드를 입력해 주세요.
-          </p>
-        )}
+        <LoginError error={error} />
         <EmailLogin next={safeNext} />
         <div className="flex items-center gap-3 py-1 text-[12px] text-neutral-400">
           <span className="h-px flex-1 bg-neutral-200" />
