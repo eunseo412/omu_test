@@ -19,7 +19,11 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
 2. SQL Editor에서 `supabase/migrations/20261108000000_init.sql` 내용을 실행 (테이블·RLS·RPC·스토리지 버킷 생성)
 3. Authentication › URL Configuration
    - Site URL: `http://localhost:3000` (배포 후 Vercel 주소로 변경)
-   - Redirect URLs: `http://localhost:3000/auth/callback`, `https://<배포주소>/auth/callback`
+   - Redirect URLs: 접속하는 **모든 주소**를 등록해야 합니다. 여기 없는 주소에서 로그인하면 Site URL로 돌아가
+     다른 컴퓨터에서는 `localhost 연결 거부` 에러가 납니다.
+     - `http://localhost:3000/**`
+     - 같은 와이파이의 다른 기기에서 접속: `http://<내 PC IP>:3000/**` (예: `http://192.168.0.12:3000/**`)
+     - Vercel 배포: `https://<프로젝트>.vercel.app/**`, 미리보기 배포까지 허용하려면 `https://*-<팀>.vercel.app/**`
 
 ### 이메일 인증 로그인 (설정 없이 바로 동작)
 Supabase에 기본으로 켜져 있습니다. 메일의 **링크**를 누르거나 **인증 코드**를 입력하면 로그인되고, 처음 쓰는 이메일은 자동 가입됩니다.
