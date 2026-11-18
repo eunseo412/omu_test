@@ -52,7 +52,7 @@ export function ReviewForm({ rentalId, role, counterpartHandle }: { rentalId: st
         maxLength={300}
         rows={2}
         placeholder="한 줄 후기 (선택)"
-        className="mt-4 w-full resize-none rounded-xl border border-neutral-200 p-3 text-[14px] outline-none focus:border-neutral-900"
+        className="mt-4 w-full resize-none rounded-xl bg-surface p-3 text-[14px] outline-none focus:ring-2 focus:ring-neutral-900/10"
       />
       {error && <p className="mt-1 text-[13px] text-red-600">{error}</p>}
       <button onClick={submit} disabled={busy} className="mt-3 h-12 w-full rounded-xl bg-neutral-900 text-[15px] font-semibold text-white disabled:opacity-50">

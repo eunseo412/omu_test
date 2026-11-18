@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { HANDOFF_LABELS, addDays, rangesOverlap, rentalDays, todayKST } from "@omu/core";
 import { formatWon } from "@/lib/env";
+import { chipClass } from "@/components/ui/chip";
 import { formatPeriod } from "@/lib/date";
 import { requestRental } from "../actions";
 
@@ -53,7 +54,7 @@ export function RentForm({ item, booked }: Props) {
   }
 
   const fee = check.days ? check.days * item.pricePerDay : 0;
-  const dateCls = "h-12 w-full rounded-xl border border-neutral-200 bg-white px-3 text-[15px] outline-none focus:border-neutral-900";
+  const dateCls = "h-12 w-full rounded-xl bg-surface px-3 text-[15px] outline-none focus:ring-2 focus:ring-neutral-900/10";
 
   return (
     <div className="space-y-6 px-4 pb-40 pt-4">
@@ -73,7 +74,7 @@ export function RentForm({ item, booked }: Props) {
           이 옷은 {item.minDays === item.maxDays ? `${item.minDays}일` : `${item.minDays}~${item.maxDays}일`} 빌릴 수 있어요.
         </p>
         {booked.length > 0 && (
-          <div className="mt-3 rounded-xl bg-neutral-50 p-3">
+          <div className="mt-3 rounded-xl bg-surface p-3">
             <p className="mb-1 text-[12px] font-semibold text-neutral-600">이미 예약된 날짜</p>
             <ul className="space-y-0.5 text-[13px] text-neutral-600">
               {booked.map((b) => (
@@ -93,7 +94,7 @@ export function RentForm({ item, booked }: Props) {
               type="button"
               onClick={() => setHandoff(h)}
               aria-pressed={handoff === h}
-              className={`rounded-full px-4 py-2 text-[14px] ${handoff === h ? "bg-neutral-900 text-white" : "border border-neutral-200"}`}
+              className={chipClass(handoff === h)}
             >
               {HANDOFF_LABELS[h as keyof typeof HANDOFF_LABELS] ?? h}
             </button>
@@ -109,11 +110,11 @@ export function RentForm({ item, booked }: Props) {
           maxLength={500}
           rows={3}
           placeholder="예) 주말 졸업사진 촬영 때 입고 싶어요! 학생회관 앞에서 받을 수 있을까요?"
-          className="w-full resize-none rounded-xl border border-neutral-200 p-3 text-[14px] outline-none focus:border-neutral-900"
+          className="w-full resize-none rounded-xl bg-surface p-3 text-[14px] outline-none focus:ring-2 focus:ring-neutral-900/10"
         />
       </section>
 
-      <section className="space-y-2 rounded-2xl bg-neutral-50 p-4 text-[14px]">
+      <section className="space-y-2 rounded-2xl bg-surface p-4 text-[14px]">
         <Row label={`대여료 (${formatWon(item.pricePerDay)} × ${check.days ?? 0}일)`} value={formatWon(fee)} />
         <Row label="보증금 (반납 확인 후 돌려받아요)" value={formatWon(item.deposit)} />
         <p className="border-t border-neutral-200 pt-2 text-[12px] leading-relaxed text-neutral-500">

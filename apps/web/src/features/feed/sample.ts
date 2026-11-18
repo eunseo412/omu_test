@@ -9,12 +9,12 @@ export const TONES = [
 ];
 
 const owners = [
-  { handle: "minimal.jun", displayName: "준", tags: ["미니멀", "클래식"] },
-  { handle: "vintage_soo", displayName: "수아", tags: ["빈티지", "아메카지"] },
+  { handle: "minimal.jun", displayName: "준", tags: ["프렌치시크", "미니멀"] },
+  { handle: "vintage_soo", displayName: "수아", tags: ["빈티지", "페미닌"] },
   { handle: "street.hyun", displayName: "현", tags: ["스트릿", "고프코어"] },
-  { handle: "lovely.yeon", displayName: "연", tags: ["러블리", "Y2K"] },
-  { handle: "chic.min", displayName: "민", tags: ["시크", "포멀"] },
-  { handle: "sporty.dan", displayName: "단", tags: ["스포티", "캐주얼"] },
+  { handle: "lovely.yeon", displayName: "연", tags: ["민트코어", "Y2K"] },
+  { handle: "chic.min", displayName: "민", tags: ["드뮤어", "시크"] },
+  { handle: "sporty.dan", displayName: "단", tags: ["페미닌", "캐주얼"] },
 ];
 
 const titles = [

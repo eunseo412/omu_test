@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
 import { HANDLE_RE, ITEM_SIZES, STYLE_TAGS, profileInputSchema } from "@omu/core";
 import { createClient } from "@/lib/supabase/client";
+import { chipClass } from "@/components/ui/chip";
 import { compressImage } from "@/lib/image";
 import { updateProfile } from "../actions";
 
@@ -26,7 +27,7 @@ export type ProfileFormInitial = {
 };
 
 const inputCls =
-  "h-12 w-full rounded-xl border border-neutral-200 bg-white px-3.5 text-[15px] outline-none placeholder:text-neutral-400 focus:border-neutral-900";
+  "h-12 w-full rounded-xl bg-surface px-3.5 text-[15px] outline-none placeholder:text-neutral-400 focus:ring-2 focus:ring-neutral-900/10";
 const numOrNull = (s: string) => (s.trim() === "" ? null : Number(s));
 
 export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
@@ -177,7 +178,7 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
         </div>
       </Field>
 
-      <div className="rounded-2xl bg-neutral-50 p-4">
+      <div className="rounded-2xl bg-surface p-4">
         <p className="text-[15px] font-semibold">체형 정보</p>
         <p className="mb-4 text-[12px] text-neutral-500">나와 비슷한 체형의 옷장을 찾는 데 쓰여요. 선택 사항이에요.</p>
         <div className="space-y-5">
@@ -226,7 +227,7 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       type="button"
       onClick={onClick}
       aria-pressed={on}
-      className={`rounded-full px-3.5 py-2 text-[14px] ${on ? "bg-neutral-900 text-white" : "border border-neutral-200 bg-white text-neutral-700"}`}
+      className={chipClass(on)}
     >
       {children}
     </button>

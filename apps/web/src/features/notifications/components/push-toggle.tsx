@@ -101,7 +101,7 @@ export function PushToggle() {
   };
 
   return (
-    <div className="mx-4 my-3 flex items-center gap-3 rounded-2xl bg-[#faf8f5] p-4">
+    <div className="mx-4 my-3 flex items-center gap-3 rounded-2xl bg-surface p-4">
       <BellRing className="h-6 w-6 shrink-0 text-accent" strokeWidth={1.8} />
       <div className="flex-1">
         <p className="text-[13px] leading-snug text-neutral-700">{text[state]}</p>

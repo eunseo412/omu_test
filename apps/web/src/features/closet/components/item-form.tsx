@@ -8,6 +8,7 @@ import {
   itemInputSchema,
 } from "@omu/core";
 import { createClient } from "@/lib/supabase/client";
+import { chipClass } from "@/components/ui/chip";
 import { hasSupabase } from "@/lib/env";
 import { compressImage } from "@/lib/image";
 import { createItem } from "../actions";
@@ -153,7 +154,7 @@ export function ItemForm() {
             <button
               type="button"
               onClick={() => fileInput.current?.click()}
-              className="flex aspect-[3/4] w-28 shrink-0 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 text-neutral-500"
+              className="flex aspect-[3/4] w-28 shrink-0 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-neutral-300 bg-surface text-neutral-500"
             >
               <Camera className="h-6 w-6" strokeWidth={1.5} />
               <span className="text-[12px]">사진 추가</span>
@@ -246,7 +247,7 @@ export function ItemForm() {
         />
       </Field>
 
-      <label className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3">
+      <label className="flex items-center justify-between rounded-xl bg-surface px-4 py-3">
         <span>
           <span className="block text-[15px] font-medium">판매도 가능해요</span>
           <span className="text-[12px] text-neutral-500">원하는 사람이 있으면 구매 제안을 받을 수 있어요</span>
@@ -268,7 +269,7 @@ export function ItemForm() {
 }
 
 const inputCls =
-  "h-12 w-full rounded-xl border border-neutral-200 bg-white px-3.5 text-[15px] outline-none placeholder:text-neutral-400 focus:border-neutral-900";
+  "h-12 w-full rounded-xl bg-surface px-3.5 text-[15px] outline-none placeholder:text-neutral-400 focus:ring-2 focus:ring-neutral-900/10";
 
 function friendly(field: string, msg: string): string {
   const map: Record<string, string> = {
@@ -308,7 +309,7 @@ function Chips<T extends string>({ options, selected, onToggle, label }: { optio
             type="button"
             onClick={() => onToggle(o)}
             aria-pressed={on}
-            className={`rounded-full px-3.5 py-2 text-[14px] ${on ? "bg-neutral-900 text-white" : "border border-neutral-200 bg-white text-neutral-700"}`}
+            className={chipClass(on)}
           >
             {label ? label(o) : o}
           </button>

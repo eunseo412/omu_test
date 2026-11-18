@@ -90,7 +90,7 @@ export function EmailLogin({ next = "/" }: { next?: string }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="이메일 주소 (예: name@gmail.com)"
-          className="h-12 w-full rounded-xl border border-neutral-300 bg-white px-3.5 text-[15px] outline-none placeholder:text-neutral-400 focus:border-neutral-900"
+          className="h-12 w-full rounded-xl bg-surface px-3.5 text-[15px] outline-none placeholder:text-neutral-400 focus:ring-2 focus:ring-neutral-900/10"
         />
         <button
           type="submit"
@@ -119,7 +119,7 @@ export function EmailLogin({ next = "/" }: { next?: string }) {
         value={code}
         onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
         placeholder="인증 코드"
-        className="h-12 w-full rounded-xl border border-neutral-300 bg-white px-3.5 text-center text-[18px] tracking-[0.3em] outline-none placeholder:text-[15px] placeholder:tracking-normal placeholder:text-neutral-400 focus:border-neutral-900"
+        className="h-12 w-full rounded-xl bg-surface px-3.5 text-center text-[18px] tracking-[0.3em] outline-none placeholder:text-[15px] placeholder:tracking-normal placeholder:text-neutral-400 focus:ring-2 focus:ring-neutral-900/10"
       />
       <button
         type="submit"

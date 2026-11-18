@@ -28,7 +28,7 @@ export function ProfileView({ p }: { p: ProfileData }) {
       </header>
 
       {p.isSample && (
-        <p className="mx-4 mb-2 rounded-lg bg-neutral-900 px-3 py-2 text-xs text-white/80">샘플 옷장입니다.</p>
+        <p className="mx-4 mb-2 rounded-lg bg-surface px-3 py-2 text-[12px] text-muted">샘플 옷장입니다.</p>
       )}
 
       <section className="px-4 pt-2">
@@ -44,7 +44,7 @@ export function ProfileView({ p }: { p: ProfileData }) {
         <div className="mt-3 flex items-center gap-1.5">
           <h1 className="text-[17px] font-bold">{p.displayName}</h1>
           {p.isVerifiedStudent && <BadgeCheck className="h-4 w-4 text-sky-500" aria-label="학생 인증" />}
-          <span className="ml-auto rounded-full bg-orange-50 px-2.5 py-1 text-[12px] font-bold text-accent">
+          <span className="ml-auto rounded-full bg-surface px-2.5 py-1 text-[12px] font-bold">
             신뢰도 {p.trustTemp.toFixed(1)}℃
           </span>
         </div>
@@ -53,7 +53,7 @@ export function ProfileView({ p }: { p: ProfileData }) {
         {p.styleTags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {p.styleTags.map((t) => (
-              <Link key={t} href={`/explore?tag=${encodeURIComponent(t)}`} className="rounded-full bg-neutral-100 px-2.5 py-1 text-[12px]">
+              <Link key={t} href={`/?tag=${encodeURIComponent(t)}`} className="rounded-full bg-surface px-3 py-1.5 text-[12px] font-medium">
                 #{t}
               </Link>
             ))}
@@ -63,7 +63,7 @@ export function ProfileView({ p }: { p: ProfileData }) {
         <div className="mt-4 flex gap-2">
           {p.isMe ? (
             <>
-              <Link href="/me/edit" className="flex h-10 flex-1 items-center justify-center rounded-xl border border-neutral-300 text-[14px] font-semibold">
+              <Link href="/me/edit" className="flex h-10 flex-1 items-center justify-center rounded-xl bg-surface text-[14px] font-semibold">
                 프로필 편집
               </Link>
               <Link href="/closet/new" className="flex h-10 flex-1 items-center justify-center gap-1 rounded-xl bg-neutral-900 text-[14px] font-semibold text-white">

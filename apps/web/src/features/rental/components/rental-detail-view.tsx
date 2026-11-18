@@ -75,7 +75,7 @@ export function RentalDetailView({ r }: { r: RentalDetail }) {
         </div>
       </Link>
 
-      <section className="mx-4 space-y-3 rounded-2xl bg-[#faf8f5] p-4">
+      <section className="mx-4 space-y-3 rounded-2xl bg-surface p-4">
         <p className="text-[17px] font-bold">{RENTAL_STATUS_LABELS[r.status]}</p>
         {overdue && <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] font-semibold text-red-600">반납일({formatDay(r.endDate)})이 지났어요.</p>}
         <p className="text-[14px] leading-relaxed text-neutral-700">{guide(r.status, r.role, r.endDate)}</p>
@@ -106,7 +106,7 @@ export function RentalDetailView({ r }: { r: RentalDetail }) {
       {r.status === "completed" && (
         <div className="mt-6">
           {r.myReviewDone ? (
-            <p className="mx-4 rounded-2xl bg-neutral-50 p-4 text-center text-[14px] text-neutral-500">평가를 남겼어요. 고마워요!</p>
+            <p className="mx-4 rounded-2xl bg-surface p-4 text-center text-[14px] text-neutral-500">평가를 남겼어요. 고마워요!</p>
           ) : (
             <ReviewForm rentalId={r.id} role={r.role} counterpartHandle={r.counterpart.handle} />
           )}

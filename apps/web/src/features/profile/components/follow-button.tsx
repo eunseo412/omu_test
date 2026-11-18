@@ -22,7 +22,7 @@ export function FollowButton({ targetId, handle, initial }: { targetId: string; 
     <button
       onClick={onClick}
       disabled={pending}
-      className={`h-10 flex-1 rounded-xl text-[14px] font-semibold ${following ? "border border-neutral-300 bg-white" : "bg-neutral-900 text-white"}`}
+      className={`h-10 flex-1 rounded-xl text-[14px] font-semibold ${following ? "bg-surface" : "bg-neutral-900 text-white"}`}
     >
       {following ? "팔로잉" : "팔로우"}
     </button>

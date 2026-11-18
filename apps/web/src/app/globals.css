@@ -1,16 +1,22 @@
 @import "tailwindcss";
 
+/* O:MU 테마: 흰 바탕 · 검정 포인트 · 연회색 면 (메인 디자인 기준) */
 @theme {
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --color-brand: #1f1f1f;
-  --color-accent: #ff6b4a; /* 신뢰도 온도·CTA 포인트 */
+  --color-brand: #111111;
+  --color-accent: #111111; /* 주요 강조(신뢰도 온도, 선택 상태) */
+  --color-point: #ff4d2e; /* 안 읽음 점·배지처럼 작은 알림 표시에만 */
+  --color-surface: #f3f3f1; /* 검색창·칩·카드 배경 */
+  --color-line: #ebebe8;
+  --color-muted: #8a8a86;
 }
 
 html {
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  overscroll-behavior-y: none; /* 앱처럼: 바운스 스크롤 억제 */
+  overscroll-behavior-y: none;
+  letter-spacing: -0.01em;
 }
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);

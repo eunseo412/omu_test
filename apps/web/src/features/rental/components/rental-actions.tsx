@@ -72,7 +72,7 @@ function actionFor(to: RentalStatus, role: Role): ActionDef | null {
 
 const btn: Record<Kind, string> = {
   primary: "h-12 flex-1 rounded-xl bg-neutral-900 text-[15px] font-semibold text-white",
-  secondary: "h-12 flex-1 rounded-xl border border-neutral-300 text-[15px] font-semibold",
+  secondary: "h-12 flex-1 rounded-xl bg-white text-[15px] font-semibold ring-1 ring-line",
   text: "w-full py-2 text-[13px] text-neutral-500 underline",
 };
 
@@ -241,7 +241,7 @@ function ProofSheet({
           maxLength={500}
           rows={3}
           placeholder={sheet.notePlaceholder + (sheet.noteRequired ? "" : " (선택)")}
-          className="w-full resize-none rounded-xl border border-neutral-200 p-3 text-[14px] outline-none focus:border-neutral-900"
+          className="w-full resize-none rounded-xl bg-surface p-3 text-[14px] outline-none focus:ring-2 focus:ring-neutral-900/10"
         />
         {(localError || error) && <p className="mt-2 text-center text-[13px] text-red-600">{localError ?? error}</p>}
         <button

@@ -1,14 +1,15 @@
 import { RENTAL_STATUS_LABELS, type RentalStatus } from "@omu/core";
 
+// 흑백 테마: 확인이 필요한 상태는 검정, 진행 중은 진회색 글자, 끝난 상태는 흐리게
 const TONE: Record<RentalStatus, string> = {
-  requested: "bg-amber-50 text-amber-700",
-  accepted: "bg-sky-50 text-sky-700",
-  handed_over: "bg-violet-50 text-violet-700",
-  returned: "bg-amber-50 text-amber-700",
-  disputed: "bg-red-50 text-red-700",
-  completed: "bg-emerald-50 text-emerald-700",
-  rejected: "bg-neutral-100 text-neutral-500",
-  cancelled: "bg-neutral-100 text-neutral-500",
+  requested: "bg-neutral-900 text-white",
+  returned: "bg-neutral-900 text-white",
+  disputed: "bg-point text-white",
+  accepted: "bg-surface text-neutral-900",
+  handed_over: "bg-surface text-neutral-900",
+  completed: "bg-surface text-muted",
+  rejected: "bg-surface text-muted line-through",
+  cancelled: "bg-surface text-muted line-through",
 };
 
 export function StatusBadge({ status }: { status: RentalStatus }) {

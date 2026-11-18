@@ -62,7 +62,7 @@ export function RentalChat({ rentalId, myId, counterpartName, initial }: { renta
   return (
     <section className="px-4">
       <h2 className="mb-3 text-[15px] font-semibold">@{counterpartName}님과 채팅</h2>
-      <div className="space-y-2 rounded-2xl bg-neutral-50 p-3">
+      <div className="space-y-2 rounded-2xl bg-surface p-3">
         {messages.length === 0 ? (
           <p className="py-6 text-center text-[13px] text-neutral-400">만날 시간과 장소를 이야기해 보세요.</p>
         ) : (
@@ -90,7 +90,7 @@ export function RentalChat({ rentalId, myId, counterpartName, initial }: { renta
           onChange={(e) => setText(e.target.value)}
           maxLength={1000}
           placeholder="메시지 보내기"
-          className="h-11 flex-1 rounded-full border border-neutral-200 px-4 text-[14px] outline-none focus:border-neutral-900"
+          className="h-11 flex-1 rounded-full bg-surface px-4 text-[14px] outline-none focus:ring-2 focus:ring-neutral-900/10"
         />
         <button type="submit" disabled={!text.trim() || sending} aria-label="보내기" className="flex h-11 w-11 items-center justify-center rounded-full bg-neutral-900 text-white disabled:opacity-40">
           <Send className="h-4 w-4" />

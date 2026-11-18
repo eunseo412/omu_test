@@ -33,7 +33,7 @@ export default async function RentalsPage({ searchParams }: { searchParams: Prom
             {active === "borrowed" ? "아직 빌린 옷이 없어요." : "아직 들어온 대여 신청이 없어요."}
           </p>
           <Link
-            href={active === "borrowed" ? "/explore" : "/closet/new"}
+            href={active === "borrowed" ? "/" : "/closet/new"}
             className="mt-4 inline-block rounded-xl bg-neutral-900 px-5 py-2.5 text-[14px] font-semibold text-white"
           >
             {active === "borrowed" ? "옷 둘러보기" : "옷 등록하기"}
@@ -48,7 +48,7 @@ export default async function RentalsPage({ searchParams }: { searchParams: Prom
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <StatusBadge status={r.status} />
-                    {r.myTurn && <span className="text-[11px] font-bold text-accent">내 차례</span>}
+                    {r.myTurn && <span className="text-[11px] font-bold text-point">내 차례</span>}
                   </div>
                   <p className="mt-1 truncate text-[15px] font-semibold">{r.itemTitle}</p>
                   <p className="text-[12px] text-neutral-500">
@@ -71,7 +71,7 @@ function TabLink({ href, on, label, count }: { href: string; on: boolean; label:
   return (
     <Link href={href} className={`relative py-3 text-center text-[14px] ${on ? "font-semibold" : "text-neutral-400"}`}>
       {label}
-      {count > 0 && <span className="ml-1 rounded-full bg-accent px-1.5 text-[11px] font-bold text-white">{count}</span>}
+      {count > 0 && <span className="ml-1 rounded-full bg-point px-1.5 text-[11px] font-bold text-white">{count}</span>}
       {on && <span className="absolute inset-x-6 bottom-0 h-0.5 bg-neutral-900" />}
     </Link>
   );

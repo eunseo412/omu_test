@@ -40,15 +40,15 @@ export function NotificationList({ items }: { items: NotificationItem[] }) {
       <ul>
         {items.map((n) => (
           <li key={n.id}>
-            <button onClick={() => open(n)} className={`flex w-full gap-3 px-4 py-3.5 text-left ${n.read ? "" : "bg-orange-50/60"}`}>
+            <button onClick={() => open(n)} className={`flex w-full gap-3 px-4 py-3.5 text-left ${n.read ? "" : "bg-surface/70"}`}>
               <div className="relative shrink-0">
                 {n.actor ? (
                   <Avatar src={n.actor.avatarUrl} name={n.actor.displayName} size={44} />
                 ) : (
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-neutral-100"><Shirt className="h-5 w-5" /></span>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface"><Shirt className="h-5 w-5" /></span>
                 )}
                 <span className="absolute -bottom-0.5 -right-0.5 rounded-full bg-white p-0.5">
-                  {n.kind === "message" ? <MessageCircle className="h-3.5 w-3.5 text-sky-600" /> : <Shirt className="h-3.5 w-3.5 text-accent" />}
+                  {n.kind === "message" ? <MessageCircle className="h-3.5 w-3.5 text-neutral-900" /> : <Shirt className="h-3.5 w-3.5 text-neutral-900" />}
                 </span>
               </div>
               <div className="min-w-0 flex-1">
@@ -56,7 +56,7 @@ export function NotificationList({ items }: { items: NotificationItem[] }) {
                 <p className="line-clamp-2 text-[13px] text-neutral-500">{n.body}</p>
                 <p className="mt-0.5 text-[11px] text-neutral-400">{formatRelative(n.createdAt)}</p>
               </div>
-              {!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent" aria-label="안 읽음" />}
+              {!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-point" aria-label="안 읽음" />}
             </button>
           </li>
         ))}
