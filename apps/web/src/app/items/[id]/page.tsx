@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { ItemImage } from "@/components/ui/item-image";
 import { LikeButton } from "@/features/feed/components/like-button";
+import { ItemOwnerMenu } from "@/features/closet/components/item-owner-menu";
 import { getItem } from "@/features/feed/queries";
 import { formatWon } from "@/lib/env";
 
@@ -27,6 +28,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
         <Link href="/" aria-label="뒤로" className="absolute left-3 top-[calc(env(safe-area-inset-top)+12px)] rounded-full bg-white/90 p-2 backdrop-blur">
           <ChevronLeft className="h-5 w-5" />
         </Link>
+        {item.isMine && <ItemOwnerMenu itemId={item.id} hidden={item.status === "hidden"} ownerHandle={item.owner.handle} />}
         {images.length > 1 && (
           <span className="absolute bottom-3 right-3 rounded-full bg-black/55 px-2.5 py-1 text-[12px] font-medium text-white">
             1 / {images.length} · 옆으로 넘겨보세요
@@ -35,6 +37,11 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="px-4 pt-5">
+        {item.isMine && item.status === "hidden" && (
+          <p className="mb-4 rounded-xl bg-neutral-900 px-3.5 py-2.5 text-[13px] text-white">
+            숨긴 옷이에요. 나만 볼 수 있고 대여 신청을 받지 않아요. 오른쪽 위 ⋯ 에서 다시 보이게 할 수 있어요.
+          </p>
+        )}
         <div className="flex flex-wrap gap-1.5">
           {item.styleTags.map((t) => (
             <Link key={t} href={`/?tag=${encodeURIComponent(t)}`} className="rounded-full bg-surface px-3 py-1.5 text-[12px] font-semibold">
@@ -76,8 +83,8 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
             <p className="text-[12px] text-muted">보증금 {formatWon(item.deposit)}</p>
           </div>
           {item.isMine ? (
-            <Link href={`/u/${item.owner.handle}`} className="rounded-xl bg-surface px-5 py-3.5 text-[15px] font-semibold">
-              내 옷장으로
+            <Link href={`/items/${item.id}/edit`} className="rounded-xl bg-neutral-900 px-7 py-3.5 text-[15px] font-semibold text-white">
+              수정하기
             </Link>
           ) : item.id.startsWith("sample-") ? (
             <span className="rounded-xl bg-neutral-300 px-6 py-3.5 text-[15px] font-semibold text-white">샘플 옷</span>

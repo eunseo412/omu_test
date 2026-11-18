@@ -143,13 +143,14 @@ export type ItemDetail = ItemCardData & {
   ownerId: string;
   isMine: boolean;
   liked: boolean;
+  status: "active" | "hidden";
 };
 
 export async function getItem(id: string): Promise<ItemDetail | null> {
   if (id.startsWith("sample-")) {
     const s = SAMPLE_ITEMS.find((i) => i.id === id);
     if (!s) return null;
-    return { ...s, description: "샘플 아이템입니다. 실제 옷이 등록되면 이 자리에 설명이 표시됩니다.", category: "top", deposit: 30000, minDays: 1, maxDays: 7, handoffMethods: ["in_person"], images: [], ownerTrustTemp: 37.2, ownerId: "", isMine: false, liked: false };
+    return { ...s, description: "샘플 아이템입니다. 실제 옷이 등록되면 이 자리에 설명이 표시됩니다.", category: "top", deposit: 30000, minDays: 1, maxDays: 7, handoffMethods: ["in_person"], images: [], ownerTrustTemp: 37.2, ownerId: "", isMine: false, liked: false, status: "active" };
   }
   if (!hasSupabase()) return null;
   const supabase = await createClient();
@@ -157,14 +158,15 @@ export async function getItem(id: string): Promise<ItemDetail | null> {
   const { data } = await supabase
     .from("items")
     .select(
-      "id,title,brand,size,price_per_day,style_tags,description,category,deposit,min_days,max_days,handoff_methods," +
+      "id,title,brand,size,price_per_day,style_tags,description,category,deposit,min_days,max_days,handoff_methods,status," +
         "owner_id,item_images(path,sort_order),owner:profiles!items_owner_id_fkey(handle,display_name,avatar_url,trust_temp)",
     )
     .eq("id", id)
+    .neq("status", "deleted")
     .maybeSingle();
   if (!data) return null;
   const r = data as unknown as ItemRow & {
-    owner_id: string; description: string; category: string; deposit: number; min_days: number; max_days: number; handoff_methods: string[];
+    owner_id: string; status: "active" | "hidden"; description: string; category: string; deposit: number; min_days: number; max_days: number; handoff_methods: string[];
     owner: ItemRow["owner"] & { trust_temp: number };
   };
   const card = toCard(r, 0);
@@ -184,5 +186,6 @@ export async function getItem(id: string): Promise<ItemDetail | null> {
     ownerId: r.owner_id,
     isMine: user?.id === r.owner_id,
     liked,
+    status: r.status,
   };
 }

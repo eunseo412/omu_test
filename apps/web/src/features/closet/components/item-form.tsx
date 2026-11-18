@@ -11,9 +11,29 @@ import { createClient } from "@/lib/supabase/client";
 import { chipClass } from "@/components/ui/chip";
 import { hasSupabase } from "@/lib/env";
 import { compressImage } from "@/lib/image";
-import { createItem } from "../actions";
+import { createItem, updateItem } from "../actions";
 
-type Photo = { id: string; file: File; preview: string };
+/** 기존 사진(수정 시)은 경로만, 새 사진은 파일을 들고 있다 */
+type Photo =
+  | { id: string; kind: "existing"; path: string; preview: string }
+  | { id: string; kind: "new"; file: File; preview: string };
+
+export type ItemFormInitial = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  size: string;
+  brand: string | null;
+  styleTags: string[];
+  pricePerDay: number;
+  deposit: number;
+  minDays: number;
+  maxDays: number;
+  forSale: boolean;
+  handoffMethods: string[];
+  images: { path: string; url: string }[];
+};
 type Category = (typeof ITEM_CATEGORIES)[number];
 type Size = (typeof ITEM_SIZES)[number];
 type Tag = (typeof STYLE_TAGS)[number];
@@ -22,30 +42,33 @@ type Handoff = (typeof HANDOFF_METHODS)[number];
 const MAX_TAGS = 5;
 const toInt = (s: string) => (s.trim() === "" ? NaN : Number(s.replace(/[^\d]/g, "")));
 
-export function ItemForm() {
+export function ItemForm({ initial }: { initial?: ItemFormInitial }) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
+  const editing = Boolean(initial);
 
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<Category | null>(null);
-  const [size, setSize] = useState<Size | null>(null);
-  const [brand, setBrand] = useState("");
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [price, setPrice] = useState("");
-  const [deposit, setDeposit] = useState("");
-  const [minDays, setMinDays] = useState("1");
-  const [maxDays, setMaxDays] = useState("7");
-  const [handoff, setHandoff] = useState<Handoff[]>(["in_person"]);
-  const [forSale, setForSale] = useState(false);
-  const [description, setDescription] = useState("");
+  const [photos, setPhotos] = useState<Photo[]>(
+    () => initial?.images.map((im) => ({ id: im.path, kind: "existing" as const, path: im.path, preview: im.url })) ?? [],
+  );
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [category, setCategory] = useState<Category | null>((initial?.category as Category) ?? null);
+  const [size, setSize] = useState<Size | null>((initial?.size as Size) ?? null);
+  const [brand, setBrand] = useState(initial?.brand ?? "");
+  const [tags, setTags] = useState<Tag[]>(((initial?.styleTags ?? []) as Tag[]).filter((t) => (STYLE_TAGS as readonly string[]).includes(t)));
+  const [price, setPrice] = useState(initial ? String(initial.pricePerDay) : "");
+  const [deposit, setDeposit] = useState(initial ? String(initial.deposit) : "");
+  const [minDays, setMinDays] = useState(String(initial?.minDays ?? 1));
+  const [maxDays, setMaxDays] = useState(String(initial?.maxDays ?? 7));
+  const [handoff, setHandoff] = useState<Handoff[]>((initial?.handoffMethods as Handoff[]) ?? ["in_person"]);
+  const [forSale, setForSale] = useState(initial?.forSale ?? false);
+  const [description, setDescription] = useState(initial?.description ?? "");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<string | null>(null); // 진행 단계 문구
 
   // 미리보기 URL 정리
-  useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.preview)), [photos]);
+  useEffect(() => () => photos.forEach((p) => p.kind === "new" && URL.revokeObjectURL(p.preview)), [photos]);
 
   function addFiles(list: FileList | null) {
     if (!list) return;
@@ -53,7 +76,7 @@ export function ItemForm() {
     const next = [...list]
       .filter((f) => f.type.startsWith("image/"))
       .slice(0, room)
-      .map((file) => ({ id: crypto.randomUUID(), file, preview: URL.createObjectURL(file) }));
+      .map((file) => ({ id: crypto.randomUUID(), kind: "new" as const, file, preview: URL.createObjectURL(file) }));
     setPhotos((p) => [...p, ...next]);
     setErrors((e) => ({ ...e, photos: "" }));
   }
@@ -114,30 +137,38 @@ export function ItemForm() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      router.push("/login?next=/closet/new");
+      router.push(`/login?next=${encodeURIComponent(location.pathname)}`);
       return;
     }
 
-    // 2) 사진 압축 → Storage 업로드 (items/{uid}/{uuid}.jpg)
+    // 2) 새 사진만 압축 → Storage 업로드 (items/{uid}/{uuid}.jpg). 기존 사진은 경로 그대로
     const uploaded: string[] = [];
     try {
-      for (let i = 0; i < photos.length; i++) {
-        setSubmitting(`사진 올리는 중 (${i + 1}/${photos.length})`);
-        const blob = await compressImage(photos[i].file);
+      const newCount = photos.filter((p) => p.kind === "new").length;
+      const finalPaths: string[] = [];
+      for (const p of photos) {
+        if (p.kind === "existing") {
+          finalPaths.push(p.path);
+          continue;
+        }
+        setSubmitting(`사진 올리는 중 (${uploaded.length + 1}/${newCount})`);
+        const blob = await compressImage(p.file);
         const path = `${user.id}/${crypto.randomUUID()}.jpg`;
         const { error } = await supabase.storage.from("items").upload(path, blob, { contentType: "image/jpeg" });
         if (error) throw error;
         uploaded.push(path);
+        finalPaths.push(path);
       }
 
       // 3) DB 저장
-      setSubmitting("등록하는 중");
-      const res = await createItem(parsed.data, uploaded);
+      setSubmitting(editing ? "저장하는 중" : "등록하는 중");
+      const res = initial ? await updateItem(initial.id, parsed.data, finalPaths) : await createItem(parsed.data, finalPaths);
       if (!res.ok) {
         if (res.fieldErrors) setErrors(res.fieldErrors);
         throw new Error(res.error);
       }
       router.replace(`/items/${res.id}`);
+      router.refresh();
     } catch (err) {
       if (uploaded.length) await supabase.storage.from("items").remove(uploaded); // 고아 파일 정리
       setFormError(err instanceof Error ? err.message : "등록에 실패했어요.");
@@ -262,7 +293,7 @@ export function ItemForm() {
         disabled={submitting !== null}
         className="h-13 w-full rounded-xl bg-neutral-900 py-3.5 text-[16px] font-semibold text-white disabled:opacity-60"
       >
-        {submitting ?? "옷장에 등록하기"}
+        {submitting ?? (editing ? "수정 완료" : "옷장에 등록하기")}
       </button>
     </form>
   );
