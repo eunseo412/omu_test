@@ -15,7 +15,7 @@ describe("profileInputSchema", () => {
   });
   it("limits style tags to 5", () => {
     const r = profileInputSchema.safeParse({
-      displayName: "a", handle: "abc", styleTags: ["미니멀", "캐주얼", "스트릿", "빈티지", "클래식", "시크"],
+      displayName: "a", handle: "abc", styleTags: ["프렌치시크", "캐주얼", "스트릿", "빈티지", "클래식", "페미닌"],
     });
     expect(r.success).toBe(false);
   });

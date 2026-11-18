@@ -2,9 +2,8 @@ import { z } from "zod";
 
 /** 추구미(스타일) 태그. 베타에서는 고정 목록, 이후 DB 테이블로 이전. */
 export const STYLE_TAGS = [
-  "프렌치시크", "빈티지", "페미닌", "스트릿", "드뮤어", "민트코어",
-  "미니멀", "캐주얼", "클래식", "아메카지", "고프코어", "러블리",
-  "시크", "Y2K", "포멀", "스포티",
+  "프렌치시크", "빈티지", "페미닌", "스트릿", "드뮤어", "캐주얼",
+  "클래식", "아메카지", "러블리", "Y2K", "스포티",
 ] as const;
 
 export const ITEM_CATEGORIES = ["top", "bottom", "outer", "dress", "shoes", "bag", "acc"] as const;
