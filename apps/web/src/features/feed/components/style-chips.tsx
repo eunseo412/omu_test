@@ -1,43 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { STYLE_TAGS } from "@omu/core";
-import { chipClass } from "@/components/ui/chip";
 
-const VISIBLE = 2;
-
-/** 전체 · 대표 스타일 2개 · 더 보기(펼치면 전체 스타일) */
+/** 홈 스타일 필터: 잡지 목차 같은 텍스트 탭. 선택은 굵게 + 밑줄, 가로로 넘겨서 전체 보기 */
 export function StyleChips({ active }: { active: string | null }) {
-  const [open, setOpen] = useState(false);
-  const shown: string[] = STYLE_TAGS.slice(0, VISIBLE) as unknown as string[];
-  if (active && !shown.includes(active)) shown.push(active); // 선택한 스타일은 접혀 있어도 보이게
+  const activeRef = useRef<HTMLAnchorElement>(null);
 
-  const href = (t: string | null) => (t ? `/?tag=${encodeURIComponent(t)}` : "/");
+  // 오른쪽에 있는 스타일을 골랐을 때도 선택된 탭이 보이게
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [active]);
 
+  const tabs: (string | null)[] = [null, ...STYLE_TAGS];
   return (
-    <div className="px-4">
-      {open ? (
-        <div className="flex flex-wrap gap-2">
-          <Link href={href(null)} className={chipClass(!active)} onClick={() => setOpen(false)}>전체</Link>
-          {STYLE_TAGS.map((t) => (
-            <Link key={t} href={href(t)} className={chipClass(active === t)} onClick={() => setOpen(false)}>
-              {t}
-            </Link>
-          ))}
-          <button onClick={() => setOpen(false)} className={chipClass(false)}>접기</button>
-        </div>
-      ) : (
-        <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
-          <Link href={href(null)} className={chipClass(!active)}>전체</Link>
-          {shown.map((t) => (
-            <Link key={t} href={href(t)} className={chipClass(active === t)}>
-              {t}
-            </Link>
-          ))}
-          <button onClick={() => setOpen(true)} className={chipClass(false)}>더 보기</button>
-        </div>
-      )}
-    </div>
+    <nav aria-label="스타일" className="no-scrollbar flex gap-5 overflow-x-auto border-b border-line px-4">
+      {tabs.map((t) => {
+        const on = (t ?? null) === active;
+        return (
+          <Link
+            key={t ?? "all"}
+            ref={on ? activeRef : undefined}
+            href={t ? `/?tag=${encodeURIComponent(t)}` : "/"}
+            aria-current={on ? "page" : undefined}
+            className={`-mb-px shrink-0 border-b-2 pb-2.5 text-[15px] transition-colors ${
+              on ? "border-neutral-900 font-bold text-neutral-900" : "border-transparent text-muted"
+            }`}
+          >
+            {t ?? "전체"}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

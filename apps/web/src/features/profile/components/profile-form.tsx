@@ -174,7 +174,7 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
       <Field label="나의 추구미" hint={`최대 5개 · ${tags.length}개 선택`} error={errors.styleTags}>
         <div className="flex flex-wrap gap-2">
           {STYLE_TAGS.map((t) => (
-            <Chip key={t} on={tags.includes(t)} onClick={() => toggleTag(t)}>#{t}</Chip>
+            <Chip key={t} on={tags.includes(t)} onClick={() => toggleTag(t)}>{t}</Chip>
           ))}
         </div>
       </Field>
