@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, ChevronRight, Heart, Shirt, UserPen } from "lucide-react";
+import { Bell, ChevronRight, Heart, KeyRound, Shirt, UserPen } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Avatar } from "@/components/ui/avatar";
 import { signOut } from "@/features/auth/actions";
@@ -37,6 +37,7 @@ export default async function MePage() {
     { href: "/likes", label: "관심 목록", sub: "하트한 옷 · 팔로우한 옷장", Icon: Heart },
     { href: "/notifications", label: "알림", Icon: Bell },
     { href: "/me/edit", label: "프로필 편집", Icon: UserPen },
+    { href: "/me/password", label: "비밀번호 설정", Icon: KeyRound },
   ].filter(Boolean) as { href: string; label: string; sub?: string; Icon: typeof Shirt }[];
 
   return (

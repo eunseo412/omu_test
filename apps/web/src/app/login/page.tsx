@@ -1,4 +1,5 @@
-import { EmailLogin } from "@/features/auth/components/email-login";
+import { ForgotPassword } from "@/features/auth/components/forgot-password";
+import { PasswordLogin } from "@/features/auth/components/password-login";
 import { LoginButtons } from "@/features/auth/components/login-buttons";
 import { LoginError } from "@/features/auth/components/login-error";
 import { Wordmark } from "@/components/ui/wordmark";
@@ -21,7 +22,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       </div>
       <div className="pb-safe mb-10 space-y-3">
         <LoginError error={error} />
-        <EmailLogin next={safeNext} />
+        <PasswordLogin next={safeNext} />
+        <ForgotPassword next={safeNext} />
         <div className="flex items-center gap-3 py-1 text-[12px] text-neutral-400">
           <span className="h-px flex-1 bg-neutral-200" />
           또는
