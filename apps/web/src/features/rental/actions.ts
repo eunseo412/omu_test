@@ -29,8 +29,12 @@ function friendly(message: string): string {
     ["not a party", "이 거래의 당사자가 아니에요."],
     ["already reviewed", "이미 평가를 남겼어요."],
     ["rental not completed", "거래가 완료된 뒤에 평가할 수 있어요."],
+    // DB 업데이트(SQL 마이그레이션)가 빠졌을 때: 사용자에게는 영문 에러 대신 안내
+    ["Could not find the function", "아직 준비 중인 기능이에요. 잠시 후 다시 시도해 주세요."],
   ];
-  return map.find(([k]) => message.includes(k))?.[1] ?? `처리에 실패했어요. (${message})`;
+  const hit = map.find(([k]) => message.includes(k));
+  if (hit?.[0] === "Could not find the function") console.error("[rental] DB 함수 없음 — supabase/migrations SQL을 실행했는지 확인:", message);
+  return hit?.[1] ?? `처리에 실패했어요. (${message})`;
 }
 
 export async function requestRental(raw: unknown): Promise<Result<{ id: string }>> {
