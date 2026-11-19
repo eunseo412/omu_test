@@ -1,6 +1,6 @@
 import "server-only";
 import { isMyTurn, type RentalStatus } from "@omu/core";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { hasSupabase, publicImageUrl } from "@/lib/env";
 import type { RentalDetail, RentalListItem } from "./types";
 
@@ -32,7 +32,7 @@ type ListRow = {
 export async function getMyRentals(): Promise<{ borrowed: RentalListItem[]; lent: RentalListItem[] } | null> {
   if (!hasSupabase()) return null;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return null;
 
   const { data } = await supabase
@@ -69,7 +69,7 @@ export async function getMyRentals(): Promise<{ borrowed: RentalListItem[]; lent
 export async function getRental(id: string): Promise<RentalDetail | null> {
   if (!hasSupabase()) return null;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return null;
 
   const { data: r } = await supabase

@@ -5,7 +5,7 @@ import { ItemImage } from "@/components/ui/item-image";
 import { getItem } from "@/features/feed/queries";
 import { getBookedRanges } from "@/features/rental/queries";
 import { RentForm } from "@/features/rental/components/rent-form";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/server";
 import { formatWon, hasSupabase } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
@@ -14,8 +14,7 @@ export const metadata = { title: "대여 신청" };
 export default async function RentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!hasSupabase() || id.startsWith("sample-")) redirect(`/items/${id}`);
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) redirect(`/login?next=/items/${id}/rent`);
 
   const [item, booked] = await Promise.all([getItem(id), getBookedRanges(id)]);

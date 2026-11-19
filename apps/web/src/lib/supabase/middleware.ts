@@ -34,7 +34,9 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // getClaims: 토큰 서명을 직접 검증(가능하면 Auth 서버 왕복 없음)하고, 만료됐으면 세션을 갱신해 쿠키에 쓴다
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? data.claims : null;
   const path = request.nextUrl.pathname;
   if (!user && PROTECTED.some((p) => path === p || path.startsWith(p + "/"))) {
     const url = request.nextUrl.clone();
