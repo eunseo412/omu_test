@@ -21,6 +21,7 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
    - `20261109000000_rental_flow.sql` (대여 흐름·평가·신뢰도·채팅 실시간)
    - `20261110000000_notifications.sql` (알림·푸시 구독)
    - `20261118000000_likes.sql` (하트/관심 목록)
+   - `20261119000000_mood_archive.sql` (mood archive: 빌린 옷 수집)
    - 새 파일이 추가되면 그 파일만 추가로 실행하면 됩니다.
 3. Authentication › URL Configuration
    - Site URL: `http://localhost:3000` (배포 후 Vercel 주소로 변경)

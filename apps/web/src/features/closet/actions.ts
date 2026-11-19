@@ -111,7 +111,13 @@ export async function updateItem(itemId: string, raw: unknown, imagePaths: strin
   await supabase.from("item_images").delete().eq("item_id", itemId).not("id", "in", `(${keepIds.join(",")})`);
 
   const removed = oldPaths.filter((p) => !imagePaths.includes(p) && p.startsWith(`${user.id}/`));
-  if (removed.length) await supabase.storage.from("items").remove(removed);
+  if (removed.length) {
+    // mood archive가 쓰고 있는 사진은 남긴다 (빌린 사람의 아카이브에서 사라지지 않게)
+    const { data: inUse } = await supabase.rpc("archived_paths", { p_paths: removed });
+    const keep = new Set((inUse ?? []) as string[]);
+    const toDelete = removed.filter((p) => !keep.has(p));
+    if (toDelete.length) await supabase.storage.from("items").remove(toDelete);
+  }
 
   revalidatePath("/");
   revalidatePath(`/items/${itemId}`);

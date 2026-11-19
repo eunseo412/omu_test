@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getRental } from "@/features/rental/queries";
 import { markRentalNotificationsRead } from "@/features/notifications/queries";
+import { getArchiveIdForRental } from "@/features/archive/queries";
 import { RentalDetailView } from "@/features/rental/components/rental-detail-view";
 import { hasSupabase } from "@/lib/env";
 
@@ -14,5 +15,7 @@ export default async function RentalPage({ params }: { params: Promise<{ id: str
   const rental = await getRental(id);
   if (!rental) notFound();
   await markRentalNotificationsRead(id); // 이 거래 알림은 읽음 처리
-  return <RentalDetailView r={rental} />;
+  // 빌린 사람 + 완료된 거래면 mood archive 카드로 이어준다
+  const archiveId = rental.role === "renter" && rental.status === "completed" ? await getArchiveIdForRental(id) : null;
+  return <RentalDetailView r={rental} archiveId={archiveId} />;
 }

@@ -5,9 +5,13 @@ import { ItemImage } from "@/components/ui/item-image";
 import { formatWon } from "@/lib/env";
 import { FollowButton } from "./follow-button";
 import { ShareButton } from "./share-button";
+import { ArchiveGrid } from "@/features/archive/components/archive-grid";
+import type { ArchiveCard } from "@/features/archive/queries";
 import type { ProfileData } from "../types";
 
-export function ProfileView({ p }: { p: ProfileData }) {
+export function ProfileView({ p, tab = "closet", archive = [] }: { p: ProfileData; tab?: "closet" | "archive"; archive?: ArchiveCard[] }) {
+  const tabCls = (on: boolean) =>
+    `-mb-px inline-block border-b-2 pb-2.5 text-[14px] ${on ? "border-neutral-900 font-semibold" : "border-transparent text-muted"}`;
   const body = [
     p.heightCm && `${p.heightCm}cm`,
     p.topSize && `상의 ${p.topSize}`,
@@ -76,11 +80,35 @@ export function ProfileView({ p }: { p: ProfileData }) {
         </div>
       </section>
 
-      <div className="mt-5 border-b border-neutral-200 px-4">
-        <span className="inline-block border-b-2 border-neutral-900 pb-2.5 text-[14px] font-semibold">옷장</span>
-      </div>
+      <nav className="mt-5 flex gap-6 border-b border-line px-4">
+        <Link href={`/u/${p.handle}`} className={tabCls(tab === "closet")} aria-current={tab === "closet" ? "page" : undefined}>
+          옷장
+        </Link>
+        <Link href={`/u/${p.handle}?tab=archive`} className={tabCls(tab === "archive")} aria-current={tab === "archive" ? "page" : undefined}>
+          mood archive <span className="text-muted">{archive.length}</span>
+        </Link>
+      </nav>
 
-      {p.items.length ? (
+      {tab === "archive" ? (
+        archive.length ? (
+          <div className="pt-4">
+            {p.isMe && <p className="px-4 pb-3 text-[12px] text-muted">빌린 옷이 반납되면 여기에 모여요. 숨긴 카드는 나만 보여요.</p>}
+            <ArchiveGrid cards={archive} />
+          </div>
+        ) : (
+          <div className="px-6 py-14 text-center">
+            <p className="text-[15px] font-semibold">{p.isMe ? "아직 수집한 무드가 없어요" : "아직 mood archive가 비어 있어요"}</p>
+            {p.isMe && (
+              <>
+                <p className="mt-1 text-[13px] text-muted">옷을 빌리고 반납하면 mood archive에 모여요.</p>
+                <Link href="/" className="mt-4 inline-block rounded-xl bg-neutral-900 px-5 py-2.5 text-[14px] font-semibold text-white">
+                  옷 둘러보기
+                </Link>
+              </>
+            )}
+          </div>
+        )
+      ) : p.items.length ? (
         <div className="grid grid-cols-3 gap-0.5 pt-0.5">
           {p.items.map((it) => (
             <Link key={it.id} href={`/items/${it.id}`} className="relative block">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { HANDOFF_LABELS, RENTAL_STATUS_LABELS, rentalDays, todayKST, type RentalStatus } from "@omu/core";
 import { Avatar } from "@/components/ui/avatar";
 import { ItemImage } from "@/components/ui/item-image";
@@ -49,7 +49,7 @@ function guide(status: RentalStatus, role: "owner" | "renter", end: string): str
   }
 }
 
-export function RentalDetailView({ r }: { r: RentalDetail }) {
+export function RentalDetailView({ r, archiveId = null }: { r: RentalDetail; archiveId?: string | null }) {
   const today = todayKST();
   const overdue = r.status === "handed_over" && today > r.endDate;
   const days = rentalDays(r.startDate, r.endDate);
@@ -102,6 +102,17 @@ export function RentalDetailView({ r }: { r: RentalDetail }) {
       <div className="mt-6">
         <RentalChat rentalId={r.id} myId={r.myId} counterpartName={r.counterpart.handle} initial={r.messages} />
       </div>
+
+      {archiveId && (
+        <Link href={`/archive/${archiveId}`} className="mx-4 mt-6 flex items-center gap-3 rounded-2xl bg-neutral-900 p-4 text-white">
+          <ItemImage src={r.item.imageUrl} alt={r.item.title} sizes="56px" className="h-16 w-14 shrink-0 rounded-lg" />
+          <span className="flex-1">
+            <b className="block text-[15px]">내 옷장에 추가됐어요</b>
+            <span className="text-[12px] text-white/70">mood archive에서 보기 · 다시 빌리기 · 옷장 팔로우</span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0" />
+        </Link>
+      )}
 
       {r.status === "completed" && (
         <div className="mt-6">
