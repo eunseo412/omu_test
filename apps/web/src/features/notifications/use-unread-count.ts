@@ -13,7 +13,8 @@ export function useUnreadCount() {
 
   useEffect(() => {
     if (!hasSupabase()) return;
-    createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    // 화면 표시용이라 저장된 세션만 확인 (네트워크 왕복 없음). 데이터 권한은 DB(RLS)가 확인
+    createClient().auth.getSession().then(({ data }) => setUserId(data.session?.user.id ?? null));
   }, []);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import "server-only";
 import { STYLE_TAGS } from "@omu/core";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { hasSupabase, publicImageUrl } from "@/lib/env";
 import { SAMPLE_ITEMS, TONES } from "./sample";
 import type { ItemCardData } from "./types";
@@ -61,7 +61,7 @@ export async function getDiscover({ tag, q }: { tag?: string | null; q?: string 
   let req = supabase.from("items").select(ITEM_SELECT).eq("status", "active").order("created_at", { ascending: false }).limit(60);
   if (activeTag) req = req.contains("style_tags", [activeTag]);
   else if (query) req = req.or(`title.ilike.%${query}%,brand.ilike.%${query}%`);
-  const [{ data, error }, { data: { user } }] = await Promise.all([req, supabase.auth.getUser()]);
+  const [{ data, error }, user] = await Promise.all([req, getAuthUser()]);
   const items = ((data ?? []) as unknown as ItemRow[]).map(toCard);
 
   // 아직 등록된 옷이 하나도 없을 때만 샘플을 보여준다 (검색 결과 0개는 그대로 빈 화면)
@@ -80,7 +80,7 @@ export async function getDiscover({ tag, q }: { tag?: string | null; q?: string 
 export async function getFavorites() {
   if (!hasSupabase()) return null;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return null;
 
   const [likesRes, followsRes] = await Promise.all([
@@ -154,8 +154,10 @@ export async function getItem(id: string): Promise<ItemDetail | null> {
   }
   if (!hasSupabase()) return null;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data } = await supabase
+  const user = await getAuthUser();
+  // 옷 정보와 '내가 하트했는지'를 동시에 조회
+  const [{ data }, likeRes] = await Promise.all([
+    supabase
     .from("items")
     .select(
       "id,title,brand,size,price_per_day,style_tags,description,category,deposit,min_days,max_days,handoff_methods,status," +
@@ -163,16 +165,16 @@ export async function getItem(id: string): Promise<ItemDetail | null> {
     )
     .eq("id", id)
     .neq("status", "deleted")
-    .maybeSingle();
+    .maybeSingle(),
+    user ? supabase.from("item_likes").select("item_id").eq("user_id", user.id).eq("item_id", id).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
   if (!data) return null;
   const r = data as unknown as ItemRow & {
     owner_id: string; status: "active" | "hidden"; description: string; category: string; deposit: number; min_days: number; max_days: number; handoff_methods: string[];
     owner: ItemRow["owner"] & { trust_temp: number };
   };
   const card = toCard(r, 0);
-  const liked = user
-    ? Boolean((await supabase.from("item_likes").select("item_id").eq("user_id", user.id).eq("item_id", id).maybeSingle()).data)
-    : false;
+  const liked = Boolean(likeRes.data);
   return {
     ...card,
     description: r.description,

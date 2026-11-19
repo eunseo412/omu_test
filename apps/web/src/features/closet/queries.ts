@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { hasSupabase, publicImageUrl } from "@/lib/env";
 import type { ItemFormInitial } from "./components/item-form";
 
@@ -7,7 +7,7 @@ import type { ItemFormInitial } from "./components/item-form";
 export async function getItemForEdit(id: string): Promise<ItemFormInitial | "not_mine" | null> {
   if (!hasSupabase()) return null;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return null;
   const { data } = await supabase
     .from("items")

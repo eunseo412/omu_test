@@ -4,14 +4,14 @@ import { AppHeader } from "@/components/layout/app-header";
 import { Avatar } from "@/components/ui/avatar";
 import { signOut } from "@/features/auth/actions";
 import { PushToggle } from "@/features/notifications/components/push-toggle";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { hasSupabase, publicImageUrl } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
 export default async function MePage() {
   const supabase = hasSupabase() ? await createClient() : null;
-  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  const user = supabase ? await getAuthUser() : null;
   const profile = user
     ? (await supabase!.from("profiles").select("handle,display_name,avatar_url,trust_temp,style_tags").eq("id", user.id).maybeSingle()).data
     : null;

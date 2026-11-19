@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { hasSupabase, publicImageUrl } from "@/lib/env";
 import { SAMPLE_HOME, SAMPLE_ITEMS, TONES } from "@/features/feed/sample";
 import type { ProfileData } from "./types";
@@ -31,7 +31,7 @@ export async function getProfile(handle: string): Promise<ProfileData | null> {
     .maybeSingle();
   if (!p) return sampleProfile(handle);
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   const isMe = user?.id === p.id;
 
   const [itemsRes, followers, following, followRow] = await Promise.all([
@@ -88,7 +88,7 @@ export async function getProfile(handle: string): Promise<ProfileData | null> {
 export async function getMyProfileForEdit() {
   if (!hasSupabase()) return null;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return null;
   const { data } = await supabase
     .from("profiles")

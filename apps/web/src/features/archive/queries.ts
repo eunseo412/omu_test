@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { hasSupabase, publicImageUrl } from "@/lib/env";
 import { TONES } from "@/features/feed/sample";
 
@@ -60,7 +60,7 @@ export type ArchiveEntry = ArchiveCard & {
 export async function getArchiveEntry(id: string): Promise<ArchiveEntry | null> {
   if (!hasSupabase() || !/^[0-9a-f-]{36}$/i.test(id)) return null;
   const supabase = await createClient();
-  const [{ data }, { data: { user } }] = await Promise.all([
+  const [{ data }, user] = await Promise.all([
     supabase
       .from("mood_archive")
       .select(
@@ -70,7 +70,7 @@ export async function getArchiveEntry(id: string): Promise<ArchiveEntry | null> 
       )
       .eq("id", id)
       .maybeSingle(),
-    supabase.auth.getUser(),
+    getAuthUser(),
   ]);
   if (!data) return null;
   const r = data as unknown as Row & {
