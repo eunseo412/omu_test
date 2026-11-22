@@ -22,6 +22,7 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
    - `20261110000000_notifications.sql` (알림·푸시 구독)
    - `20261118000000_likes.sql` (하트/관심 목록)
    - `20261119000000_mood_archive.sql` (mood archive: 빌린 옷 수집)
+   - `20261122000000_condition_proofs.sql` (상태 기록 사진 필수화)
    - 새 파일이 추가되면 그 파일만 추가로 실행하면 됩니다.
 3. Authentication › URL Configuration
    - Site URL: `http://localhost:3000` (배포 후 Vercel 주소로 변경)
@@ -45,6 +46,13 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
   3. Vercel은 환경변수를 바꾼 뒤 **Redeploy** 해야 반영됩니다.
 - 휴대폰에서 알림 탭(또는 MY)의 **알림 켜기**를 누르면 그 기기로 알림이 옵니다.
   아이폰은 Safari에서 **홈 화면에 추가**한 앱에서만 켤 수 있어요 (iOS 16.4+).
+
+### 상태 기록 사진 자동 삭제 (거래 종료 30일 후)
+Vercel Cron이 매일 03:00(KST)에 `/api/cron/purge-proofs`를 호출합니다. Vercel 환경변수에 아래 두 개가 필요합니다.
+| 이름 | 값 |
+|---|---|
+| `CRON_SECRET` | 아무 긴 무작위 문자열 (예: `openssl rand -hex 32`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Secret key (푸시 알림과 같은 값) |
 
 ### 이메일 + 비밀번호 가입 (기본, 메일 발송 없음)
 Supabase 기본 메일은 시간당 몇 통만 보낼 수 있어, 가입은 메일 없이 이메일+비밀번호로 바로 되게 했습니다.

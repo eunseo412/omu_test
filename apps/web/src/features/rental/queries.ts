@@ -1,5 +1,5 @@
 import "server-only";
-import { isMyTurn, type RentalStatus } from "@omu/core";
+import { isMyTurn, shotOf, type RentalStatus } from "@omu/core";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { hasSupabase, publicImageUrl } from "@/lib/env";
 import type { RentalDetail, RentalListItem } from "./types";
@@ -75,7 +75,7 @@ export async function getRental(id: string): Promise<RentalDetail | null> {
   const { data: r } = await supabase
     .from("rentals")
     .select(
-      "id,status,owner_id,renter_id,start_date,end_date,handoff_method,price_per_day,fee_total,deposit," +
+      "id,status,owner_id,renter_id,start_date,end_date,handoff_method,price_per_day,fee_total,deposit,received_at,proofs_purged_at," +
         "item:items(id,title,item_images(path,sort_order))," +
         "owner:profiles!rentals_owner_id_fkey(id,handle,display_name,avatar_url,trust_temp)," +
         "renter:profiles!rentals_renter_id_fkey(id,handle,display_name,avatar_url,trust_temp)",
@@ -87,19 +87,19 @@ export async function getRental(id: string): Promise<RentalDetail | null> {
   type P = { id: string; handle: string; display_name: string; avatar_url: string | null; trust_temp: number };
   const row = r as unknown as {
     id: string; status: RentalStatus; owner_id: string; renter_id: string; start_date: string; end_date: string;
-    handoff_method: string; price_per_day: number; fee_total: number; deposit: number;
+    handoff_method: string; price_per_day: number; fee_total: number; deposit: number; received_at: string | null; proofs_purged_at: string | null;
     item: { id: string; title: string; item_images: ImgRow[] } | null; owner: P; renter: P;
   };
   const role = row.owner_id === user.id ? "owner" : "renter";
   const other = role === "owner" ? row.renter : row.owner;
 
   const [eventsRes, messagesRes, reviewRes] = await Promise.all([
-    supabase.from("rental_events").select("id,actor_id,from_status,to_status,note,photo_paths,created_at").eq("rental_id", id).order("id"),
+    supabase.from("rental_events").select("id,actor_id,from_status,to_status,note,photo_paths,kind,created_at").eq("rental_id", id).order("id"),
     supabase.from("messages").select("id,sender_id,body,created_at").eq("rental_id", id).order("id").limit(300),
     supabase.from("reviews").select("id").eq("rental_id", id).eq("reviewer_id", user.id).maybeSingle(),
   ]);
 
-  type E = { id: number; actor_id: string | null; from_status: RentalStatus | null; to_status: RentalStatus; note: string | null; photo_paths: string[]; created_at: string };
+  type E = { id: number; actor_id: string | null; from_status: RentalStatus | null; to_status: RentalStatus; note: string | null; photo_paths: string[]; kind: "status" | "receipt"; created_at: string };
   const events = (eventsRes.data ?? []) as E[];
   const paths = events.flatMap((e) => e.photo_paths ?? []);
   const signed = new Map<string, string>();
@@ -126,11 +126,16 @@ export async function getRental(id: string): Promise<RentalDetail | null> {
     },
     events: events.map((e) => ({
       id: e.id, actorId: e.actor_id, from: e.from_status, to: e.to_status, note: e.note, createdAt: e.created_at,
-      photos: (e.photo_paths ?? []).map((p) => signed.get(p)).filter((u): u is string => Boolean(u)),
+      kind: e.kind ?? "status",
+      photos: (e.photo_paths ?? [])
+        .map((p) => ({ url: signed.get(p) ?? "", shot: shotOf(p) }))
+        .filter((ph) => Boolean(ph.url)),
     })),
     messages: ((messagesRes.data ?? []) as { id: number; sender_id: string; body: string; created_at: string }[]).map((m) => ({
       id: m.id, senderId: m.sender_id, body: m.body, createdAt: m.created_at,
     })),
     myReviewDone: Boolean(reviewRes.data),
+    receivedAt: row.received_at,
+    proofsPurged: Boolean(row.proofs_purged_at),
   };
 }

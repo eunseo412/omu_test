@@ -61,6 +61,14 @@ requested ─┬─> accepted ──> handed_over ──> returned ─┬─> co
   - `illustration_status` pending → ready, 결과는 `archive` 버킷에 저장, 같은 옷은 일러스트 재사용으로 비용 절감
   - 실패 시 원래 사진 표시(지금 동작과 같음)
 
+## 상태 기록 사진 (분쟁 증거)
+- 전달(주인)·반납 직전: 앞면·뒷면·라벨 3컷 필수, 카메라 촬영만(10분 넘은 파일은 거부), 흠집 추가 사진 선택
+- 사진 아래에 '거래 번호 · 서버 기준 촬영 시각 · 컷'을 새겨 저장, 찍는 즉시 업로드
+- 빌린 사람이 '이 상태로 받았어요'를 눌러야 대여 시작(`received_at`), 다른 점은 사진·메모로 남김
+- 반납 승인 화면에 전달 때 vs 반납 때 컷별 비교
+- 상태 사진은 누구도 삭제 불가(Storage 정책), 거래 종료(`closed_at`) 30일 후 Cron이 삭제(`proofs_purged_at`)
+- 분쟁 해결을 SQL로 할 때는 `closed_at = now()`도 함께 기록할 것
+
 ## TODO
 - 반납일 하루 전 리마인더 (pg_cron 또는 Vercel Cron)
 - 카카오 알림톡 (정식 서비스 단계)

@@ -29,6 +29,11 @@ function friendly(message: string): string {
     ["not a party", "이 거래의 당사자가 아니에요."],
     ["already reviewed", "이미 평가를 남겼어요."],
     ["rental not completed", "거래가 완료된 뒤에 평가할 수 있어요."],
+    ["required photos missing", "앞면·뒷면·라벨 사진 3장을 모두 찍어주세요."],
+    ["receipt not confirmed", "빌린 사람이 받은 옷 상태를 확인한 뒤에 반납할 수 있어요."],
+    ["already confirmed", "이미 받은 상태를 확인했어요."],
+    ["not handed over", "옷이 전달된 뒤에 확인할 수 있어요."],
+    ["not the renter", "빌린 사람만 확인할 수 있어요."],
     // DB 업데이트(SQL 마이그레이션)가 빠졌을 때: 사용자에게는 영문 에러 대신 안내
     ["Could not find the function", "아직 준비 중인 기능이에요. 잠시 후 다시 시도해 주세요."],
   ];
@@ -119,4 +124,24 @@ export async function sendMessage(rentalId: string, raw: string): Promise<Result
   const to = await counterpartOf(supabase, rentalId, user.id);
   if (to) pushLatestNotification(to, rentalId);
   return { ok: true, data: { id: data.id, senderId: data.sender_id, body: data.body, createdAt: data.created_at } };
+}
+
+/** 사진에 새길 시각은 휴대폰 시계가 아니라 서버 시각을 쓴다 */
+export async function getServerNow(): Promise<string> {
+  return new Date().toISOString();
+}
+
+/** 받은 상태 확인 (빌린 사람). 다른 점이 있으면 사진·메모를 함께 남긴다 */
+export async function confirmReceipt(rentalId: string, note: string | null, photoPaths: string[]): Promise<Result> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "로그인이 필요해요." };
+  if (!photoPaths.every((p) => p.startsWith(`${user.id}/${rentalId}/`))) return { ok: false, error: "잘못된 사진 경로예요." };
+  const { error } = await supabase.rpc("confirm_receipt", { p_rental_id: rentalId, p_note: note?.trim() || null, p_photos: photoPaths });
+  if (error) return { ok: false, error: friendly(error.message) };
+  const recipient = await counterpartOf(supabase, rentalId, user.id);
+  if (recipient) pushLatestNotification(recipient, rentalId);
+  revalidatePath(`/rentals/${rentalId}`);
+  revalidatePath("/rentals");
+  return { ok: true };
 }

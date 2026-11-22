@@ -97,3 +97,47 @@ export function addDays(date: string, days: number): string {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
+
+// ── 상태 기록 사진 (분쟁 증거) ───────────────────────────────────────
+/** 전달·반납 때 꼭 찍어야 하는 컷. 파일 이름 앞부분으로 구분한다: {uid}/{rentalId}/{shot}-{uuid}.jpg */
+export const PROOF_SHOTS = ["front", "back", "label"] as const;
+export type ProofShot = (typeof PROOF_SHOTS)[number] | "extra";
+
+export const PROOF_SHOT_LABELS: Record<ProofShot, string> = {
+  front: "앞면",
+  back: "뒷면",
+  label: "라벨",
+  extra: "추가",
+};
+
+export const PROOF_SHOT_GUIDES: Record<(typeof PROOF_SHOTS)[number], string> = {
+  front: "옷을 펼쳐 앞면 전체가 보이게",
+  back: "뒤집어서 뒷면 전체가 보이게",
+  label: "사이즈·소재 라벨이 읽히게 가까이",
+};
+
+/** 사진 경로에서 어떤 컷인지 읽기 */
+export function shotOf(path: string): ProofShot {
+  const name = path.split("/").pop() ?? "";
+  const prefix = name.split("-")[0];
+  return (PROOF_SHOTS as readonly string[]).includes(prefix) ? (prefix as ProofShot) : "extra";
+}
+
+/** 필수 컷 중 빠진 것 */
+export function missingShots(paths: string[]): (typeof PROOF_SHOTS)[number][] {
+  const have = new Set(paths.map(shotOf));
+  return PROOF_SHOTS.filter((s) => !have.has(s));
+}
+
+/** 이 상태 변경에 필수 컷 3장이 필요한지 (옷이 손을 떠나는 두 순간) */
+export function requiresProof(to: RentalStatus): boolean {
+  return to === "handed_over" || to === "returned";
+}
+
+/** 반납은 빌린 사람이 '받은 상태 확인'을 마친 뒤에만 가능 */
+export function canReturn(status: RentalStatus, receiptConfirmed: boolean): boolean {
+  return status === "handed_over" && receiptConfirmed;
+}
+
+/** 거래가 끝난 뒤 상태 사진 보관 기간 */
+export const PROOF_RETENTION_DAYS = 30;
