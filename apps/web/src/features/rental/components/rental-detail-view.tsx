@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { HANDOFF_LABELS, RENTAL_STATUS_LABELS, rentalDays, todayKST, type RentalStatus } from "@omu/core";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { HANDOFF_LABELS, PROOF_SHOT_LABELS, RENTAL_STATUS_LABELS, rentalDays, todayKST, type RentalStatus } from "@omu/core";
 import { Avatar } from "@/components/ui/avatar";
 import { ItemImage } from "@/components/ui/item-image";
 import { formatWon } from "@/lib/env";
 import { formatDateTime, formatDay, formatPeriod } from "@/lib/date";
 import type { RentalDetail } from "../types";
+import { ProofCompare } from "./proof-compare";
 import { RentalActions } from "./rental-actions";
 import { RentalChat } from "./rental-chat";
 import { ReviewForm } from "./review-form";
@@ -23,8 +24,13 @@ const EVENT_LABELS: Record<RentalStatus, string> = {
   completed: "반납 승인 · 거래 완료",
 };
 
-function guide(status: RentalStatus, role: "owner" | "renter", end: string): string {
+function guide(status: RentalStatus, role: "owner" | "renter", end: string, received: boolean): string {
   const owner = role === "owner";
+  if (status === "handed_over" && !received) {
+    return owner
+      ? "빌린 사람이 받은 옷 상태를 사진과 비교해 확인하고 있어요. 확인하면 대여가 시작돼요."
+      : "주인이 전달 직전에 찍은 사진과 받은 옷을 비교해 확인해 주세요. 확인해야 대여가 시작돼요.";
+  }
   switch (status) {
     case "requested":
       return owner ? "신청을 수락하면 채팅으로 만날 시간과 장소를 정해요." : "옷장 주인이 확인하고 있어요. 채팅으로 먼저 인사해도 좋아요.";
@@ -33,10 +39,12 @@ function guide(status: RentalStatus, role: "owner" | "renter", end: string): str
         ? "만나서 옷을 건네고 대여료·보증금을 받은 뒤 '옷 전달 완료'를 눌러주세요."
         : "만나서 옷을 받고 대여료·보증금을 전달해요. 주인이 전달 완료를 누르면 대여가 시작돼요.";
     case "handed_over":
-      return owner ? `대여 중이에요. 반납일은 ${formatDay(end)}이에요.` : `${formatDay(end)}까지 반납해 주세요. 반납할 때 상태 사진을 남겨요.`;
+      return owner
+        ? `대여 중이에요. 반납일은 ${formatDay(end)}이에요.`
+        : `${formatDay(end)}까지 반납해 주세요. 돌려주기 직전에 앞면·뒷면·라벨 사진을 찍어요.`;
     case "returned":
       return owner
-        ? "옷 상태를 확인하고 보증금을 돌려준 뒤 '반납 승인'을 눌러주세요. 문제가 있으면 사진과 함께 알려주세요."
+        ? "아래 '상태 비교'에서 전달 때와 반납 때 사진을 비교하고, 보증금을 돌려준 뒤 '반납 승인'을 눌러주세요. 문제가 있으면 사진과 함께 알려주세요."
         : "주인이 옷 상태를 확인하고 있어요. 승인되면 보증금을 돌려받아요.";
     case "disputed":
       return "운영팀이 내용을 확인하고 있어요. 채팅으로 상황을 정리해 주세요.";
@@ -49,10 +57,13 @@ function guide(status: RentalStatus, role: "owner" | "renter", end: string): str
   }
 }
 
-export function RentalDetailView({ r }: { r: RentalDetail }) {
+export function RentalDetailView({ r, archiveId = null }: { r: RentalDetail; archiveId?: string | null }) {
   const today = todayKST();
   const overdue = r.status === "handed_over" && today > r.endDate;
   const days = rentalDays(r.startDate, r.endDate);
+  // 가장 최근의 전달·반납 사진 (상태 비교, 받은 상태 확인에 사용)
+  const handoverPhotos = [...r.events].reverse().find((e) => e.kind === "status" && e.to === "handed_over")?.photos ?? [];
+  const returnPhotos = [...r.events].reverse().find((e) => e.kind === "status" && e.to === "returned")?.photos ?? [];
   const actorLabel = (id: string | null) => (id === r.myId ? "나" : `@${r.counterpart.handle}`);
 
   return (
@@ -78,9 +89,15 @@ export function RentalDetailView({ r }: { r: RentalDetail }) {
       <section className="mx-4 space-y-3 rounded-2xl bg-surface p-4">
         <p className="text-[17px] font-bold">{RENTAL_STATUS_LABELS[r.status]}</p>
         {overdue && <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] font-semibold text-red-600">반납일({formatDay(r.endDate)})이 지났어요.</p>}
-        <p className="text-[14px] leading-relaxed text-neutral-700">{guide(r.status, r.role, r.endDate)}</p>
-        <RentalActions rentalId={r.id} status={r.status} role={r.role} myId={r.myId} />
+        <p className="text-[14px] leading-relaxed text-neutral-700">{guide(r.status, r.role, r.endDate, Boolean(r.receivedAt))}</p>
+        <RentalActions rentalId={r.id} status={r.status} role={r.role} myId={r.myId} receivedAt={r.receivedAt} handoverPhotos={handoverPhotos} />
       </section>
+
+      {r.proofsPurged ? (
+        <p className="mx-4 mt-3 rounded-2xl bg-surface px-4 py-3 text-[12px] text-muted">보관 기간(거래 종료 후 30일)이 지나 상태 사진이 삭제됐어요.</p>
+      ) : (
+        returnPhotos.length > 0 && <ProofCompare before={handoverPhotos} after={returnPhotos} />
+      )}
 
       <Link href={`/u/${r.counterpart.handle}`} className="mx-4 mt-3 flex items-center gap-3 rounded-2xl border border-neutral-100 p-3">
         <Avatar src={r.counterpart.avatarUrl} name={r.counterpart.displayName} size={40} />
@@ -103,6 +120,17 @@ export function RentalDetailView({ r }: { r: RentalDetail }) {
         <RentalChat rentalId={r.id} myId={r.myId} counterpartName={r.counterpart.handle} initial={r.messages} />
       </div>
 
+      {archiveId && (
+        <Link href={`/archive/${archiveId}`} className="mx-4 mt-6 flex items-center gap-3 rounded-2xl bg-neutral-900 p-4 text-white">
+          <ItemImage src={r.item.imageUrl} alt={r.item.title} sizes="56px" className="h-16 w-14 shrink-0 rounded-lg" />
+          <span className="flex-1">
+            <b className="block text-[15px]">내 옷장에 추가됐어요</b>
+            <span className="text-[12px] text-white/70">mood archive에서 보기 · 다시 빌리기 · 옷장 팔로우</span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0" />
+        </Link>
+      )}
+
       {r.status === "completed" && (
         <div className="mt-6">
           {r.myReviewDone ? (
@@ -120,16 +148,17 @@ export function RentalDetailView({ r }: { r: RentalDetail }) {
             <li key={e.id} className="relative">
               <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-neutral-900" />
               <p className="text-[14px] font-semibold">
-                {EVENT_LABELS[e.to]} <span className="font-normal text-neutral-500">· {actorLabel(e.actorId)}</span>
+                {e.kind === "receipt" ? "받은 상태 확인" : EVENT_LABELS[e.to]} <span className="font-normal text-neutral-500">· {actorLabel(e.actorId)}</span>
               </p>
               <p className="text-[12px] text-neutral-400">{formatDateTime(e.createdAt)}</p>
               {e.note && <p className="mt-1 whitespace-pre-line text-[13px] text-neutral-700">{e.note}</p>}
               {e.photos.length > 0 && (
                 <div className="no-scrollbar mt-2 flex gap-1.5 overflow-x-auto">
-                  {e.photos.map((src) => (
-                    <a key={src} href={src} target="_blank" rel="noreferrer" className="shrink-0">
+                  {e.photos.map((ph) => (
+                    <a key={ph.url} href={ph.url} target="_blank" rel="noreferrer" className="relative shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element -- 만료되는 서명 URL */}
-                      <img src={src} alt="상태 사진" className="h-24 w-20 rounded-lg object-cover" />
+                      <img src={ph.url} alt={`상태 사진 ${PROOF_SHOT_LABELS[ph.shot]}`} className="h-24 w-20 rounded-lg object-cover" />
+                      <span className="absolute left-1 top-1 rounded bg-black/60 px-1 text-[10px] font-semibold text-white">{PROOF_SHOT_LABELS[ph.shot]}</span>
                     </a>
                   ))}
                 </div>

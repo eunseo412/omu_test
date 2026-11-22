@@ -1,43 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { STYLE_TAGS } from "@omu/core";
-import { chipClass } from "@/components/ui/chip";
 
-const VISIBLE = 2;
-
-/** 전체 · 대표 스타일 2개 · 더 보기(펼치면 전체 스타일) */
+/** 홈 스타일 필터: 해시태그 텍스트. 박스·밑줄 없이 글자만, 선택한 태그는 검정 굵게. 가로로 넘겨서 전체 보기 */
 export function StyleChips({ active }: { active: string | null }) {
-  const [open, setOpen] = useState(false);
-  const shown: string[] = STYLE_TAGS.slice(0, VISIBLE) as unknown as string[];
-  if (active && !shown.includes(active)) shown.push(active); // 선택한 스타일은 접혀 있어도 보이게
+  const activeRef = useRef<HTMLAnchorElement>(null);
 
-  const href = (t: string | null) => (t ? `/?tag=${encodeURIComponent(t)}` : "/");
+  // 오른쪽에 있는 태그를 골랐을 때도 보이게
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [active]);
 
+  const tags: (string | null)[] = [null, ...STYLE_TAGS];
   return (
-    <div className="px-4">
-      {open ? (
-        <div className="flex flex-wrap gap-2">
-          <Link href={href(null)} className={chipClass(!active)} onClick={() => setOpen(false)}>전체</Link>
-          {STYLE_TAGS.map((t) => (
-            <Link key={t} href={href(t)} className={chipClass(active === t)} onClick={() => setOpen(false)}>
-              {t}
-            </Link>
-          ))}
-          <button onClick={() => setOpen(false)} className={chipClass(false)}>접기</button>
-        </div>
-      ) : (
-        <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
-          <Link href={href(null)} className={chipClass(!active)}>전체</Link>
-          {shown.map((t) => (
-            <Link key={t} href={href(t)} className={chipClass(active === t)}>
-              {t}
-            </Link>
-          ))}
-          <button onClick={() => setOpen(true)} className={chipClass(false)}>더 보기</button>
-        </div>
-      )}
-    </div>
+    <nav aria-label="스타일" className="no-scrollbar flex gap-3.5 overflow-x-auto px-4 py-1">
+      {tags.map((t) => {
+        const on = t === active;
+        return (
+          <Link
+            key={t ?? "all"}
+            ref={on ? activeRef : undefined}
+            href={t ? `/?tag=${encodeURIComponent(t)}` : "/"}
+            aria-current={on ? "page" : undefined}
+            className={`shrink-0 text-[15px] transition-colors ${on ? "font-bold text-neutral-900" : "text-neutral-400"}`}
+          >
+            {t ? `#${t}` : "전체"}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

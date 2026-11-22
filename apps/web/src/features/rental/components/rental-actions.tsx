@@ -3,10 +3,11 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, X } from "lucide-react";
-import { availableTransitions, type RentalStatus } from "@omu/core";
+import { availableTransitions, requiresProof, type ProofShot, type RentalStatus } from "@omu/core";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
-import { transitionRental } from "../actions";
+import { confirmReceipt, transitionRental } from "../actions";
+import { ReceiptSheet, RequiredProofSheet } from "./proof-sheets";
 
 type Role = "owner" | "renter";
 type Kind = "primary" | "secondary" | "text";
@@ -31,7 +32,7 @@ function actionFor(to: RentalStatus, role: Role): ActionDef | null {
         kind: "primary",
         sheet: {
           title: "옷을 전달했나요?",
-          desc: "전달할 때의 옷 상태 사진을 남겨두면 반납 확인과 분쟁 때 도움이 돼요.",
+          desc: "건네기 직전 옷 상태를 앞면·뒷면·라벨 순서로 찍어주세요. 빌리는 사람이 이 사진과 비교해 확인해요.",
           photos: true,
           notePlaceholder: "예) 대여료·보증금 받음, 오른쪽 소매에 원래 있던 작은 얼룩",
         },
@@ -42,7 +43,7 @@ function actionFor(to: RentalStatus, role: Role): ActionDef | null {
         kind: "primary",
         sheet: {
           title: role === "renter" ? "옷을 반납했나요?" : "옷을 돌려받았나요?",
-          desc: "반납할 때의 옷 상태 사진을 남겨주세요.",
+          desc: "돌려주기 직전 옷 상태를 앞면·뒷면·라벨 순서로 찍어주세요. 전달 때 사진과 나란히 비교돼요.",
           photos: true,
           notePlaceholder: "예) 학생회관 앞에서 전달했어요",
         },
@@ -76,13 +77,50 @@ const btn: Record<Kind, string> = {
   text: "w-full py-2 text-[13px] text-neutral-500 underline",
 };
 
-export function RentalActions({ rentalId, status, role, myId }: { rentalId: string; status: RentalStatus; role: Role; myId: string }) {
+export function RentalActions({
+  rentalId, status, role, myId, receivedAt, handoverPhotos,
+}: {
+  rentalId: string; status: RentalStatus; role: Role; myId: string;
+  receivedAt: string | null; handoverPhotos: { url: string; shot: ProofShot }[];
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sheetFor, setSheetFor] = useState<RentalStatus | null>(null);
+  const [sheetFor, setSheetFor] = useState<RentalStatus | "receipt" | null>(null);
+
+  // 전달됐지만 빌린 사람이 아직 받은 상태를 확인하지 않았으면: 반납 대신 '받은 상태 확인'
+  const awaitingReceipt = status === "handed_over" && !receivedAt;
+  if (awaitingReceipt && role === "renter") {
+    return (
+      <>
+        <button onClick={() => setSheetFor("receipt")} className="h-12 w-full rounded-xl bg-neutral-900 text-[15px] font-semibold text-white">
+          받은 옷 상태 확인하기
+        </button>
+        {sheetFor === "receipt" && (
+          <ReceiptSheet
+            rentalId={rentalId}
+            myId={myId}
+            handoverPhotos={handoverPhotos}
+            busy={busy}
+            error={error}
+            onClose={() => { setSheetFor(null); setError(null); }}
+            onSubmit={async (note, paths) => {
+              setBusy(true);
+              setError(null);
+              const res = await confirmReceipt(rentalId, note, paths);
+              setBusy(false);
+              if (!res.ok) return setError(res.error);
+              setSheetFor(null);
+              router.refresh();
+            }}
+          />
+        )}
+      </>
+    );
+  }
 
   const actions = availableTransitions(status, role)
+    .filter((to) => !(awaitingReceipt && to === "returned"))
     .map((to) => ({ to, def: actionFor(to, role) }))
     .filter((a): a is { to: RentalStatus; def: ActionDef } => a.def !== null);
   if (actions.length === 0) return null;
@@ -109,7 +147,7 @@ export function RentalActions({ rentalId, status, role, myId }: { rentalId: stri
 
   const main = actions.filter((a) => a.def.kind !== "text");
   const minor = actions.filter((a) => a.def.kind === "text");
-  const sheet = sheetFor ? actions.find((a) => a.to === sheetFor) : null;
+  const sheet = sheetFor && sheetFor !== "receipt" ? actions.find((a) => a.to === sheetFor) : null;
 
   return (
     <div className="space-y-1">
@@ -128,7 +166,21 @@ export function RentalActions({ rentalId, status, role, myId }: { rentalId: stri
         </button>
       ))}
       {error && !sheet && <p className="text-center text-[13px] text-red-600">{error}</p>}
-      {sheet?.def.sheet && (
+      {sheet?.def.sheet && requiresProof(sheet.to) && (
+        <RequiredProofSheet
+          rentalId={rentalId}
+          myId={myId}
+          title={sheet.def.sheet.title}
+          desc={sheet.def.sheet.desc}
+          notePlaceholder={sheet.def.sheet.notePlaceholder}
+          confirmLabel={sheet.def.label}
+          busy={busy}
+          error={error}
+          onClose={() => { setSheetFor(null); setError(null); }}
+          onSubmit={(note, paths) => run(sheet.to, note, paths)}
+        />
+      )}
+      {sheet?.def.sheet && !requiresProof(sheet.to) && (
         <ProofSheet
           rentalId={rentalId}
           myId={myId}

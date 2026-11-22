@@ -15,6 +15,7 @@
 
 ## 규칙
 - 대여 상태 전이 규칙은 `packages/core/src/rental.ts`와 `transition_rental` RPC(SQL) 두 곳에 있다. **한쪽을 바꾸면 다른 쪽도 같이 바꾸고 테스트 추가.**
+- 상태 기록 사진: 전달·반납은 앞면·뒷면·라벨 3컷 필수, 반납은 빌린 사람의 '받은 상태 확인' 이후만. 규칙은 core(`requiresProof`, `canReturn`, `PROOF_SHOTS`)와 SQL(`transition_rental`, `confirm_receipt`)에 함께 있다.
 - 거래(rentals) 생성·상태 변경은 클라이언트에서 직접 insert/update 하지 말고 RPC(`request_rental`, `transition_rental`)만 사용. 금액은 서버에서 계산.
 - 모든 새 테이블은 RLS를 켜고 정책을 작성.
 - `SUPABASE_SERVICE_ROLE_KEY`는 서버 코드에서만. 클라이언트 번들에 들어가면 안 됨.

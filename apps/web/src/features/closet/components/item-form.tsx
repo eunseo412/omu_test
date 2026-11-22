@@ -241,7 +241,7 @@ export function ItemForm({ initial }: { initial?: ItemFormInitial }) {
       </Field>
 
       <Field label="추구미 태그" hint={`최대 ${MAX_TAGS}개 · ${tags.length}개 선택`} error={errors.styleTags} name="styleTags">
-        <Chips options={STYLE_TAGS} selected={tags} onToggle={toggleTag} label={(t) => `#${t}`} />
+        <Chips options={STYLE_TAGS} selected={tags} onToggle={toggleTag} />
       </Field>
 
       <div className="grid grid-cols-2 gap-3">

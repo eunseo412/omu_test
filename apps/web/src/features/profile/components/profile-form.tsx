@@ -39,7 +39,8 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
   const [displayName, setDisplayName] = useState(initial.display_name === "새 사용자" ? "" : initial.display_name);
   const [handle, setHandle] = useState(isDefault ? "" : initial.handle);
   const [bio, setBio] = useState(initial.bio ?? "");
-  const [tags, setTags] = useState<Tag[]>((initial.style_tags ?? []) as Tag[]);
+  // 목록에서 빠진 예전 태그(미니멀 등)는 걸러야 저장할 때 검증에 걸리지 않는다
+  const [tags, setTags] = useState<Tag[]>(((initial.style_tags ?? []) as Tag[]).filter((t) => (STYLE_TAGS as readonly string[]).includes(t)));
   const [height, setHeight] = useState(initial.height_cm?.toString() ?? "");
   const [topSize, setTopSize] = useState<Size | null>((initial.top_size as Size) ?? null);
   const [bottomSize, setBottomSize] = useState<Size | null>((initial.bottom_size as Size) ?? null);
@@ -173,7 +174,7 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
       <Field label="나의 추구미" hint={`최대 5개 · ${tags.length}개 선택`} error={errors.styleTags}>
         <div className="flex flex-wrap gap-2">
           {STYLE_TAGS.map((t) => (
-            <Chip key={t} on={tags.includes(t)} onClick={() => toggleTag(t)}>#{t}</Chip>
+            <Chip key={t} on={tags.includes(t)} onClick={() => toggleTag(t)}>{t}</Chip>
           ))}
         </div>
       </Field>

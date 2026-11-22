@@ -63,3 +63,26 @@ describe("rental helpers", () => {
     expect(addDays("2026-11-29", 3)).toBe("2026-12-02");
   });
 });
+
+import { canReturn, missingShots, requiresProof, shotOf } from "./rental";
+
+describe("condition proofs", () => {
+  it("reads the shot from the file name", () => {
+    expect(shotOf("u1/r1/front-abc.jpg")).toBe("front");
+    expect(shotOf("u1/r1/label-x.jpg")).toBe("label");
+    expect(shotOf("u1/r1/9f2c-old.jpg")).toBe("extra");
+  });
+  it("lists missing required shots", () => {
+    expect(missingShots(["a/b/front-1.jpg", "a/b/extra-2.jpg"])).toEqual(["back", "label"]);
+    expect(missingShots(["a/b/front-1.jpg", "a/b/back-2.jpg", "a/b/label-3.jpg"])).toEqual([]);
+  });
+  it("requires proof only when the clothes change hands", () => {
+    expect(requiresProof("handed_over")).toBe(true);
+    expect(requiresProof("returned")).toBe(true);
+    expect(requiresProof("completed")).toBe(false);
+  });
+  it("return needs receipt confirmation", () => {
+    expect(canReturn("handed_over", false)).toBe(false);
+    expect(canReturn("handed_over", true)).toBe(true);
+  });
+});

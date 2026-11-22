@@ -1,4 +1,4 @@
-import type { RentalStatus } from "@omu/core";
+import type { ProofShot, RentalStatus } from "@omu/core";
 
 export type Party = { id: string; handle: string; displayName: string; avatarUrl: string | null; trustTemp: number };
 
@@ -22,7 +22,8 @@ export type RentalEvent = {
   from: RentalStatus | null;
   to: RentalStatus;
   note: string | null;
-  photos: string[]; // 서명된 URL
+  kind: "status" | "receipt"; // receipt = 빌린 사람의 받은 상태 확인
+  photos: { url: string; shot: ProofShot }[]; // 서명된 URL + 어떤 컷인지
   createdAt: string;
 };
 
@@ -44,4 +45,6 @@ export type RentalDetail = {
   events: RentalEvent[];
   messages: ChatMessage[];
   myReviewDone: boolean;
+  receivedAt: string | null; // 빌린 사람이 받은 상태를 확인한 시각
+  proofsPurged: boolean; // 보관 기간(30일)이 지나 상태 사진이 삭제됨
 };
