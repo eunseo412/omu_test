@@ -96,5 +96,8 @@ export async function getMyProfileForEdit() {
     .eq("id", user.id)
     .maybeSingle();
   if (!data) return null;
-  return { userId: user.id, ...data, avatarPublicUrl: publicImageUrl("avatars", data.avatar_url) };
+  // 성별·몸무게는 본인 전용 함수로 (몸무게 칸은 다른 사람이 못 읽게 막혀 있다)
+  const { data: body } = await supabase.rpc("get_my_body");
+  const b = (Array.isArray(body) ? body[0] : body) as { gender: string | null; weight_kg: number | null } | null;
+  return { userId: user.id, ...data, gender: b?.gender ?? null, weight_kg: b?.weight_kg ?? null, avatarPublicUrl: publicImageUrl("avatars", data.avatar_url) };
 }

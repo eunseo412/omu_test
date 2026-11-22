@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
-import { HANDLE_RE, ITEM_SIZES, STYLE_TAGS, profileInputSchema } from "@omu/core";
+import { GENDERS, GENDER_LABELS, type Gender, HANDLE_RE, ITEM_SIZES, STYLE_TAGS, profileInputSchema } from "@omu/core";
 import { createClient } from "@/lib/supabase/client";
 import { chipClass } from "@/components/ui/chip";
 import { compressImage } from "@/lib/image";
@@ -24,6 +24,8 @@ export type ProfileFormInitial = {
   top_size: string | null;
   bottom_size: string | null;
   shoe_size: number | null;
+  gender: string | null;
+  weight_kg: number | null; // 본인만 보는 값 (get_my_body)
 };
 
 const inputCls =
@@ -45,6 +47,8 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
   const [topSize, setTopSize] = useState<Size | null>((initial.top_size as Size) ?? null);
   const [bottomSize, setBottomSize] = useState<Size | null>((initial.bottom_size as Size) ?? null);
   const [shoe, setShoe] = useState(initial.shoe_size?.toString() ?? "");
+  const [gender, setGender] = useState<Gender | null>((initial.gender as Gender) ?? null);
+  const [weight, setWeight] = useState(initial.weight_kg?.toString() ?? "");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(initial.avatarPublicUrl);
 
@@ -68,6 +72,8 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
       topSize,
       bottomSize,
       shoeSize: numOrNull(shoe),
+      gender,
+      weightKg: numOrNull(weight),
       avatarPath: initial.avatar_url,
     };
     const parsed = profileInputSchema.safeParse(input);
@@ -179,18 +185,29 @@ export function ProfileForm({ initial }: { initial: ProfileFormInitial }) {
         </div>
       </Field>
 
-      <div className="rounded-2xl bg-surface p-4">
+      <div className="rounded-2xl p-4 ring-1 ring-inset ring-line">
         <p className="text-[15px] font-semibold">체형 정보</p>
-        <p className="mb-4 text-[12px] text-neutral-500">나와 비슷한 체형의 옷장을 찾는 데 쓰여요. 선택 사항이에요.</p>
+        <p className="mb-4 text-[12px] text-neutral-500">홈의 체형 필터와 “나와 비슷한 체형” 찾기에 쓰여요. 모두 선택 사항이에요.</p>
         <div className="space-y-5">
+          <Field label="성별">
+            <div className="flex flex-wrap gap-2">
+              {GENDERS.map((g) => (
+                <Chip key={g} on={gender === g} onClick={() => setGender(gender === g ? null : g)}>{GENDER_LABELS[g]}</Chip>
+              ))}
+            </div>
+          </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="키" error={errors.heightCm}>
               <Suffix unit="cm"><input inputMode="numeric" value={height} onChange={(e) => setHeight(e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="170" className={`${inputCls} pr-11 text-right`} /></Suffix>
+            </Field>
+            <Field label="몸무게" hint="나만 보여요" error={errors.weightKg}>
+              <Suffix unit="kg"><input inputMode="numeric" value={weight} onChange={(e) => setWeight(e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="52" className={`${inputCls} pr-11 text-right`} /></Suffix>
             </Field>
             <Field label="신발" error={errors.shoeSize}>
               <Suffix unit="mm"><input inputMode="numeric" value={shoe} onChange={(e) => setShoe(e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="260" className={`${inputCls} pr-11 text-right`} /></Suffix>
             </Field>
           </div>
+          <p className="-mt-2 text-[11px] leading-relaxed text-muted">몸무게는 프로필에 표시되지 않고, 다른 사람이 5kg 단위 구간으로 옷장을 찾을 때만 쓰여요.</p>
           <Field label="상의 사이즈">
             <SizeChips value={topSize} onChange={setTopSize} />
           </Field>

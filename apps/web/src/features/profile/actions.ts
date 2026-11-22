@@ -46,6 +46,8 @@ export async function updateProfile(raw: unknown): Promise<ActionResult> {
       top_size: v.topSize,
       bottom_size: v.bottomSize,
       shoe_size: v.shoeSize,
+      gender: v.gender,
+      weight_kg: v.weightKg,
       avatar_url: v.avatarPath,
     })
     .eq("id", user.id);

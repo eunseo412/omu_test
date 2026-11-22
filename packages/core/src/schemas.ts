@@ -64,6 +64,42 @@ export const profileInputSchema = z.object({
   topSize: z.enum(ITEM_SIZES).nullable().default(null),
   bottomSize: z.enum(ITEM_SIZES).nullable().default(null),
   shoeSize: z.number().int().min(200, "신발 사이즈는 mm로 입력해 주세요.").max(320, "신발 사이즈는 mm로 입력해 주세요.").nullable().default(null),
+  gender: z.enum(["female", "male", "other"]).nullable().default(null),
+  weightKg: z.number().int().min(30, "몸무게를 확인해 주세요.").max(200, "몸무게를 확인해 주세요.").nullable().default(null),
   avatarPath: z.string().max(300).nullable().default(null),
 });
 export type ProfileInput = z.infer<typeof profileInputSchema>;
+
+// ── 홈 체형 필터 ──────────────────────────────────────────────
+export const GENDERS = ["female", "male", "other"] as const;
+export type Gender = (typeof GENDERS)[number];
+export const GENDER_LABELS: Record<Gender, string> = { female: "여성", male: "남성", other: "선택 안 함" };
+
+/** 키·몸무게 필터 구간 [이상, 미만). null은 끝이 열린 구간. 몸무게는 DB 규칙상 5kg 단위 */
+export type Range = { key: string; label: string; min: number | null; max: number | null };
+export const HEIGHT_RANGES: Range[] = [
+  { key: "-155", label: "155cm 미만", min: null, max: 155 },
+  { key: "155-160", label: "155~160cm", min: 155, max: 160 },
+  { key: "160-165", label: "160~165cm", min: 160, max: 165 },
+  { key: "165-170", label: "165~170cm", min: 165, max: 170 },
+  { key: "170-175", label: "170~175cm", min: 170, max: 175 },
+  { key: "175-180", label: "175~180cm", min: 175, max: 180 },
+  { key: "180-", label: "180cm 이상", min: 180, max: null },
+];
+export const WEIGHT_RANGES: Range[] = [
+  { key: "-45", label: "45kg 미만", min: null, max: 45 },
+  { key: "45-50", label: "45~50kg", min: 45, max: 50 },
+  { key: "50-55", label: "50~55kg", min: 50, max: 55 },
+  { key: "55-60", label: "55~60kg", min: 55, max: 60 },
+  { key: "60-65", label: "60~65kg", min: 60, max: 65 },
+  { key: "65-70", label: "65~70kg", min: 65, max: 70 },
+  { key: "70-75", label: "70~75kg", min: 70, max: 75 },
+  { key: "75-", label: "75kg 이상", min: 75, max: null },
+];
+export const rangeOf = (list: Range[], key: string | null | undefined) => list.find((r) => r.key === key) ?? null;
+
+/** 내 키·몸무게가 속한 구간 ('나와 비슷한 체형' 바로가기) */
+export function rangeKeyFor(list: Range[], value: number | null | undefined): string | null {
+  if (value == null) return null;
+  return list.find((r) => (r.min == null || value >= r.min) && (r.max == null || value < r.max))?.key ?? null;
+}

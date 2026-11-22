@@ -5,8 +5,11 @@ import { NotificationBell } from "@/features/notifications/components/notificati
 import type { DiscoverResult } from "../queries";
 import { LookGrid } from "./look-grid";
 import { StyleChips } from "./style-chips";
+import { BodyFilterBar } from "./body-filter-bar";
 
-export function DiscoverView({ data, tag, q }: { data: DiscoverResult; tag: string | null; q: string }) {
+type MyBody = { gender: "female" | "male" | "other" | null; heightCm: number | null; weightKg: number | null } | null;
+
+export function DiscoverView({ data, tag, q, myBody, filtered }: { data: DiscoverResult; tag: string | null; q: string; myBody: MyBody; filtered: boolean }) {
   return (
     <div className="pb-6">
       <header className="pt-safe sticky top-0 z-30 bg-white/95 backdrop-blur">
@@ -48,6 +51,7 @@ export function DiscoverView({ data, tag, q }: { data: DiscoverResult; tag: stri
       </form>
 
       <StyleChips active={tag} />
+      <BodyFilterBar myBody={myBody} />
 
       {data.isSample && (
         <p className="mx-4 mt-4 rounded-lg bg-surface px-3 py-2 text-[12px] text-muted">
@@ -60,8 +64,12 @@ export function DiscoverView({ data, tag, q }: { data: DiscoverResult; tag: stri
           <LookGrid items={data.items} likedIds={data.likedIds} activeTag={tag} />
         ) : (
           <div className="px-6 py-16 text-center">
-            <p className="text-[15px] font-semibold">{q ? `'${q}'에 맞는 옷이 없어요` : "아직 이 스타일의 옷이 없어요"}</p>
-            <p className="mt-1 text-[13px] text-muted">다른 스타일을 둘러보거나, 내 옷을 먼저 올려보세요.</p>
+            <p className="text-[15px] font-semibold">
+              {filtered ? "이 체형의 옷장이 아직 없어요" : q ? `'${q}'에 맞는 옷이 없어요` : "아직 이 스타일의 옷이 없어요"}
+            </p>
+            <p className="mt-1 text-[13px] text-muted">
+              {filtered ? "구간을 넓히거나 필터를 초기화해 보세요." : "다른 스타일을 둘러보거나, 내 옷을 먼저 올려보세요."}
+            </p>
             <Link href="/closet/new" className="mt-5 inline-block rounded-xl bg-neutral-900 px-5 py-3 text-[14px] font-semibold text-white">
               옷 등록하기
             </Link>

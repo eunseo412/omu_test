@@ -1,5 +1,5 @@
 import "server-only";
-import { STYLE_TAGS } from "@omu/core";
+import { HEIGHT_RANGES, STYLE_TAGS, WEIGHT_RANGES, rangeOf, type Gender } from "@omu/core";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { hasSupabase, publicImageUrl } from "@/lib/env";
 import { SAMPLE_ITEMS, TONES } from "./sample";
@@ -41,11 +41,15 @@ function toCard(r: ItemRow, i: number): ItemCardData {
 
 export type DiscoverResult = { items: ItemCardData[]; likedIds: string[]; isSample: boolean; isLoggedIn: boolean };
 
+/** 홈 체형 필터 (옷장 주인 기준). 값은 core의 HEIGHT_RANGES·WEIGHT_RANGES 키 */
+export type BodyFilter = { gender: Gender | null; height: string | null; weight: string | null };
+export const hasBodyFilter = (f?: BodyFilter | null) => Boolean(f && (f.gender || f.height || f.weight));
+
 /** 검색어에서 PostgREST 필터 문법을 깨는 문자 제거 */
 const cleanQuery = (q: string) => q.replace(/[,()%*\\:"']/g, " ").trim().slice(0, 40);
 
 /** 발견 탭: 최신 옷 사진 피드. 스타일 태그·검색어로 거르기 */
-export async function getDiscover({ tag, q }: { tag?: string | null; q?: string | null }): Promise<DiscoverResult> {
+export async function getDiscover({ tag, q, body }: { tag?: string | null; q?: string | null; body?: BodyFilter | null }): Promise<DiscoverResult> {
   const query = q ? cleanQuery(q) : "";
   const tagFromQuery = (STYLE_TAGS as readonly string[]).find((t) => t === query.replace(/^#/, ""));
   const activeTag = tag ?? tagFromQuery ?? null;
@@ -59,13 +63,26 @@ export async function getDiscover({ tag, q }: { tag?: string | null; q?: string 
 
   const supabase = await createClient();
   let req = supabase.from("items").select(ITEM_SELECT).eq("status", "active").order("created_at", { ascending: false }).limit(60);
+
+  // 체형 필터: 조건에 맞는 옷장 주인을 먼저 찾고 그 사람들의 옷만
+  if (hasBodyFilter(body)) {
+    const h = rangeOf(HEIGHT_RANGES, body!.height);
+    const w = rangeOf(WEIGHT_RANGES, body!.weight);
+    const { data: owners } = await supabase.rpc("owners_by_body", {
+      p_gender: body!.gender, p_height_min: h?.min ?? null, p_height_max: h?.max ?? null,
+      p_weight_min: w?.min ?? null, p_weight_max: w?.max ?? null,
+    });
+    const ids = (owners ?? []) as string[];
+    if (!ids.length) return { items: [], likedIds: [], isSample: false, isLoggedIn: Boolean(await getAuthUser()) };
+    req = req.in("owner_id", ids);
+  }
   if (activeTag) req = req.contains("style_tags", [activeTag]);
   else if (query) req = req.or(`title.ilike.%${query}%,brand.ilike.%${query}%`);
   const [{ data, error }, user] = await Promise.all([req, getAuthUser()]);
   const items = ((data ?? []) as unknown as ItemRow[]).map(toCard);
 
   // 아직 등록된 옷이 하나도 없을 때만 샘플을 보여준다 (검색 결과 0개는 그대로 빈 화면)
-  if (!error && items.length === 0 && !activeTag && !query) {
+  if (!error && items.length === 0 && !activeTag && !query && !hasBodyFilter(body)) {
     return { items: SAMPLE_ITEMS, likedIds: [], isSample: true, isLoggedIn: Boolean(user) };
   }
   let likedIds: string[] = [];
@@ -190,4 +207,15 @@ export async function getItem(id: string): Promise<ItemDetail | null> {
     liked,
     status: r.status,
   };
+}
+
+/** '나와 비슷한 체형' 바로가기용: 로그인한 사람의 성별·키·몸무게 */
+export async function getMyBody(): Promise<{ gender: Gender | null; heightCm: number | null; weightKg: number | null } | null> {
+  if (!hasSupabase()) return null;
+  const user = await getAuthUser();
+  if (!user) return null;
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("get_my_body");
+  const b = (Array.isArray(data) ? data[0] : data) as { gender: Gender | null; height_cm: number | null; weight_kg: number | null } | null;
+  return b ? { gender: b.gender, heightCm: b.height_cm, weightKg: b.weight_kg } : null;
 }
