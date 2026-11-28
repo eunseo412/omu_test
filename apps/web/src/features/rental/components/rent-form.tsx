@@ -7,13 +7,16 @@ import { formatWon } from "@/lib/env";
 import { chipClass } from "@/components/ui/chip";
 import { formatPeriod } from "@/lib/date";
 import { requestRental } from "../actions";
+import Link from "next/link";
+import { cardLabel, PAYMENTS_LIVE, type PaymentMethod } from "@/features/payments/config";
 
 type Props = {
-  item: { id: string; pricePerDay: number; deposit: number; minDays: number; maxDays: number; handoffMethods: string[] };
+  item: { id: string; pricePerDay: number; minDays: number; maxDays: number; handoffMethods: string[] };
+  paymentMethod?: PaymentMethod | null;
   booked: { start: string; end: string }[];
 };
 
-export function RentForm({ item, booked }: Props) {
+export function RentForm({ item, booked, paymentMethod = null }: Props) {
   const router = useRouter();
   const today = todayKST();
   const [start, setStart] = useState(addDays(today, 1));
@@ -116,9 +119,17 @@ export function RentForm({ item, booked }: Props) {
 
       <section className="space-y-2 rounded-2xl bg-surface p-4 text-[14px]">
         <Row label={`대여료 (${formatWon(item.pricePerDay)} × ${check.days ?? 0}일)`} value={formatWon(fee)} />
-        <Row label="보증금 (반납 확인 후 돌려받아요)" value={formatWon(item.deposit)} />
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-neutral-600">결제수단</span>
+          {paymentMethod ? (
+            <b>{cardLabel(paymentMethod)}</b>
+          ) : (
+            <Link href="/me/payment" className="text-[13px] font-semibold underline">등록하기</Link>
+          )}
+        </div>
         <p className="border-t border-neutral-200 pt-2 text-[12px] leading-relaxed text-neutral-500">
-          베타 기간에는 앱에서 결제하지 않아요. 수락되면 채팅으로 만날 시간을 정하고, 대여료와 보증금은 직접 주고받아요.
+          미리 내는 보증금은 없어요. 반납이 끝나면 대여료가 등록한 결제수단으로 자동 결제돼요.
+          {!PAYMENTS_LIVE && " (결제 연동 준비 중 · 베타 기간에는 대여료를 직접 주고받아요)"}
         </p>
       </section>
 

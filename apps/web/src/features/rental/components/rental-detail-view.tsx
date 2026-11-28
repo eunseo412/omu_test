@@ -6,6 +6,7 @@ import { ItemImage } from "@/components/ui/item-image";
 import { formatWon } from "@/lib/env";
 import { formatDateTime, formatDay, formatPeriod } from "@/lib/date";
 import type { RentalDetail } from "../types";
+import { PAYMENT_STATUS_LABELS, PAYMENTS_LIVE } from "@/features/payments/config";
 import { ProofCompare } from "./proof-compare";
 import { RentalActions } from "./rental-actions";
 import { RentalChat } from "./rental-chat";
@@ -36,16 +37,16 @@ function guide(status: RentalStatus, role: "owner" | "renter", end: string, rece
       return owner ? "신청을 수락하면 채팅으로 만날 시간과 장소를 정해요." : "옷장 주인이 확인하고 있어요. 채팅으로 먼저 인사해도 좋아요.";
     case "accepted":
       return owner
-        ? "만나서 옷을 건네고 대여료·보증금을 받은 뒤 '옷 전달 완료'를 눌러주세요."
-        : "만나서 옷을 받고 대여료·보증금을 전달해요. 주인이 전달 완료를 누르면 대여가 시작돼요.";
+        ? "만나서 옷을 건네기 직전 사진 3장을 찍고 '옷 전달 완료'를 눌러주세요."
+        : "만나서 옷을 받아요. 미리 낼 돈은 없어요. 주인이 전달 완료를 누르면 받은 상태를 확인해요.";
     case "handed_over":
       return owner
         ? `대여 중이에요. 반납일은 ${formatDay(end)}이에요.`
         : `${formatDay(end)}까지 반납해 주세요. 돌려주기 직전에 앞면·뒷면·라벨 사진을 찍어요.`;
     case "returned":
       return owner
-        ? "아래 '상태 비교'에서 전달 때와 반납 때 사진을 비교하고, 보증금을 돌려준 뒤 '반납 승인'을 눌러주세요. 문제가 있으면 사진과 함께 알려주세요."
-        : "주인이 옷 상태를 확인하고 있어요. 승인되면 보증금을 돌려받아요.";
+        ? "아래 '상태 비교'에서 전달 때와 반납 때 사진을 비교하고 이상이 없으면 '반납 승인'을 눌러주세요. 문제가 있으면 사진과 함께 알려주세요."
+        : "주인이 옷 상태를 확인하고 있어요. 승인되면 거래가 끝나고 대여료가 결제돼요.";
     case "disputed":
       return "운영팀이 내용을 확인하고 있어요. 채팅으로 상황을 정리해 주세요.";
     case "completed":
@@ -112,8 +113,11 @@ export function RentalDetailView({ r, archiveId = null }: { r: RentalDetail; arc
         <Info label="기간" value={`${formatPeriod(r.startDate, r.endDate)} (${days}일)`} />
         <Info label="전달 방법" value={HANDOFF_LABELS[r.handoffMethod as keyof typeof HANDOFF_LABELS] ?? r.handoffMethod} />
         <Info label="대여료" value={`${formatWon(r.feeTotal)} (${formatWon(r.pricePerDay)} × ${days}일)`} />
-        <Info label="보증금" value={formatWon(r.deposit)} />
-        <p className="pt-1 text-[12px] text-neutral-400">베타 기간에는 대여료·보증금을 직접 주고받아요.</p>
+        <Info label="결제" value={PAYMENT_STATUS_LABELS[r.paymentStatus]} />
+        <p className="pt-1 text-[12px] leading-relaxed text-neutral-400">
+          보증금은 없어요. 반납이 끝나면 대여료가 빌린 사람의 결제수단으로 자동 결제되고, 분실·파손이 확인될 때만 보상 기준액({formatWon(r.deposit)}) 안에서 추가 청구돼요.
+          {!PAYMENTS_LIVE && " 결제 연동 전인 베타 기간에는 대여료를 직접 주고받아요."}
+        </p>
       </dl>
 
       <div className="mt-6">

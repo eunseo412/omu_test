@@ -18,7 +18,7 @@ export const itemInputSchema = z.object({
   brand: z.string().max(40).optional(),
   styleTags: z.array(z.enum(STYLE_TAGS)).max(5).default([]),
   pricePerDay: z.number().int().min(0).max(1_000_000),
-  deposit: z.number().int().min(0).max(5_000_000),
+  deposit: z.number().int().min(0).max(5_000_000), // 분실·파손 시 보상 기준액 (미리 받지 않음) // 분실·파손 시 보상 기준액 (미리 받지 않음)
   minDays: z.number().int().min(1).max(30).default(1),
   maxDays: z.number().int().min(1).max(60).default(7),
   forSale: z.boolean().default(false), // 3차 수익원(중고판매) 대비 플래그

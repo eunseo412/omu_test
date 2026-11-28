@@ -34,7 +34,7 @@ function actionFor(to: RentalStatus, role: Role): ActionDef | null {
           title: "옷을 전달했나요?",
           desc: "건네기 직전 옷 상태를 앞면·뒷면·라벨 순서로 찍어주세요. 빌리는 사람이 이 사진과 비교해 확인해요.",
           photos: true,
-          notePlaceholder: "예) 대여료·보증금 받음, 오른쪽 소매에 원래 있던 작은 얼룩",
+          notePlaceholder: "예) 오른쪽 소매에 원래 있던 작은 얼룩",
         },
       };
     case "returned":
@@ -52,7 +52,7 @@ function actionFor(to: RentalStatus, role: Role): ActionDef | null {
       return {
         label: "반납 승인",
         kind: "primary",
-        confirm: "옷 상태를 확인했고 보증금을 돌려드렸나요? 승인하면 거래가 완료돼요.",
+        confirm: "옷 상태를 확인했나요? 승인하면 거래가 완료되고 대여료가 결제돼요.",
       };
     case "disputed":
       return {

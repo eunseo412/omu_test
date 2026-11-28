@@ -8,7 +8,7 @@
  */
 export const RENTAL_STATUSES = [
   "requested", // 대여자가 신청
-  "accepted", // 옷장 주인이 수락 (보증금·결제 안내 단계)
+  "accepted", // 옷장 주인이 수락 → 만나서 전달 (선결제·보증금 없음, 반납 후 자동결제)
   "rejected", // 옷장 주인이 거절
   "cancelled", // 인도 전 취소
   "handed_over", // 옷 전달 완료 (대면/택배) → 대여 중

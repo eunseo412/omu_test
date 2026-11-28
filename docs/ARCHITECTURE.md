@@ -69,6 +69,13 @@ requested ─┬─> accepted ──> handed_over ──> returned ─┬─> co
 - 상태 사진은 누구도 삭제 불가(Storage 정책), 거래 종료(`closed_at`) 30일 후 Cron이 삭제(`proofs_purged_at`)
 - 분쟁 해결을 SQL로 할 때는 `closed_at = now()`도 함께 기록할 것
 
+## 결제: 보증금 없이 사후 자동결제 (틀만, PG 연동 전)
+- 선결제·보증금 없음. 빌린 사람은 결제수단(카드)을 등록하고, 반납 승인으로 거래가 끝나면 대여료가 자동 결제된다
+- `items.deposit`/`rentals.deposit` = **분실·파손 시 보상 기준액**(미리 받지 않음). 분쟁에서 귀책 확인 시에만 이 안에서 청구
+- `payment_methods`: 빌링키는 서버만 읽음(칸 단위 권한), 등록은 서버(서비스 롤)만
+- 트리거: 신청 시 기본 결제수단 연결(`attach_payment_method`), 완료 시 `payment_status='scheduled'`
+- 남은 일: `features/payments/provider.ts` 구현(PortOne 빌링키 등), scheduled 거래 결제 크론, `NEXT_PUBLIC_PAYMENTS_LIVE=true`
+
 ## TODO
 - 반납일 하루 전 리마인더 (pg_cron 또는 Vercel Cron)
 - 카카오 알림톡 (정식 서비스 단계)

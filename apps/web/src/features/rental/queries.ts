@@ -3,6 +3,7 @@ import { isMyTurn, shotOf, type RentalStatus } from "@omu/core";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { hasSupabase, publicImageUrl } from "@/lib/env";
 import type { RentalDetail, RentalListItem } from "./types";
+import type { PaymentStatus } from "@/features/payments/config";
 
 type ImgRow = { path: string; sort_order: number };
 const firstImage = (imgs: ImgRow[] | null | undefined) =>
@@ -75,7 +76,7 @@ export async function getRental(id: string): Promise<RentalDetail | null> {
   const { data: r } = await supabase
     .from("rentals")
     .select(
-      "id,status,owner_id,renter_id,start_date,end_date,handoff_method,price_per_day,fee_total,deposit,received_at,proofs_purged_at," +
+      "id,status,owner_id,renter_id,start_date,end_date,handoff_method,price_per_day,fee_total,deposit,received_at,proofs_purged_at,payment_status," +
         "item:items(id,title,item_images(path,sort_order))," +
         "owner:profiles!rentals_owner_id_fkey(id,handle,display_name,avatar_url,trust_temp)," +
         "renter:profiles!rentals_renter_id_fkey(id,handle,display_name,avatar_url,trust_temp)",
@@ -87,7 +88,7 @@ export async function getRental(id: string): Promise<RentalDetail | null> {
   type P = { id: string; handle: string; display_name: string; avatar_url: string | null; trust_temp: number };
   const row = r as unknown as {
     id: string; status: RentalStatus; owner_id: string; renter_id: string; start_date: string; end_date: string;
-    handoff_method: string; price_per_day: number; fee_total: number; deposit: number; received_at: string | null; proofs_purged_at: string | null;
+    handoff_method: string; price_per_day: number; fee_total: number; deposit: number; received_at: string | null; proofs_purged_at: string | null; payment_status: PaymentStatus;
     item: { id: string; title: string; item_images: ImgRow[] } | null; owner: P; renter: P;
   };
   const role = row.owner_id === user.id ? "owner" : "renter";
@@ -119,6 +120,7 @@ export async function getRental(id: string): Promise<RentalDetail | null> {
     pricePerDay: row.price_per_day,
     feeTotal: row.fee_total,
     deposit: row.deposit,
+    paymentStatus: row.payment_status ?? "none",
     item: { id: row.item?.id ?? "", title: row.item?.title ?? "(삭제된 옷)", imageUrl: firstImage(row.item?.item_images) },
     counterpart: {
       id: other.id, handle: other.handle, displayName: other.display_name,

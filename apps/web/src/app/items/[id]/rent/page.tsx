@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { ItemImage } from "@/components/ui/item-image";
 import { getItem } from "@/features/feed/queries";
 import { getBookedRanges } from "@/features/rental/queries";
+import { getMyPaymentMethods } from "@/features/payments/queries";
 import { RentForm } from "@/features/rental/components/rent-form";
 import { getAuthUser } from "@/lib/supabase/server";
 import { formatWon, hasSupabase } from "@/lib/env";
@@ -17,7 +18,7 @@ export default async function RentPage({ params }: { params: Promise<{ id: strin
   const user = await getAuthUser();
   if (!user) redirect(`/login?next=/items/${id}/rent`);
 
-  const [item, booked] = await Promise.all([getItem(id), getBookedRanges(id)]);
+  const [item, booked, methods] = await Promise.all([getItem(id), getBookedRanges(id), getMyPaymentMethods()]);
   if (!item) notFound();
 
   return (
@@ -35,7 +36,7 @@ export default async function RentPage({ params }: { params: Promise<{ id: strin
           <p className="text-[13px] text-neutral-500">@{item.owner.handle} · {item.size} · {formatWon(item.pricePerDay)}/일</p>
         </div>
       </div>
-      <RentForm item={item} booked={booked} />
+      <RentForm item={item} booked={booked} paymentMethod={methods.find((m) => m.isDefault) ?? methods[0] ?? null} />
     </main>
   );
 }

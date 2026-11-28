@@ -24,6 +24,7 @@ Supabase 환경변수가 없으면 **샘플 데이터**로 화면이 표시됩�
    - `20261119000000_mood_archive.sql` (mood archive: 빌린 옷 수집)
    - `20261122000000_condition_proofs.sql` (상태 기록 사진 필수화)
    - `20261123000000_body_filters.sql` (성별·몸무게, 홈 체형 필터)
+   - `20261128000000_postpay.sql` (보증금 폐지 · 결제수단 · 사후 자동결제 틀)
    - 새 파일이 추가되면 그 파일만 추가로 실행하면 됩니다.
 3. Authentication › URL Configuration
    - Site URL: `http://localhost:3000` (배포 후 Vercel 주소로 변경)

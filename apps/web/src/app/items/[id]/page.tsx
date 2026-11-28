@@ -80,7 +80,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
           {!item.isMine && <LikeButton itemId={item.id} initial={item.liked} size={24} />}
           <div className="flex-1">
             <p className="text-[18px] font-extrabold">{formatWon(item.pricePerDay)}<span className="text-[13px] font-medium text-muted"> / 일</span></p>
-            <p className="text-[12px] text-muted">보증금 {formatWon(item.deposit)}</p>
+            <p className="text-[12px] text-muted">보증금 없음 · 반납 후 결제</p>
           </div>
           {item.isMine ? (
             <Link href={`/items/${item.id}/edit`} className="rounded-xl bg-neutral-900 px-7 py-3.5 text-[15px] font-semibold text-white">

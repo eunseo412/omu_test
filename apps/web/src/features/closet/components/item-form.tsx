@@ -248,11 +248,11 @@ export function ItemForm({ initial }: { initial?: ItemFormInitial }) {
         <Field label="하루 대여료" error={errors.pricePerDay} name="pricePerDay">
           <WonInput value={price} onChange={setPrice} placeholder="3,000" />
         </Field>
-        <Field label="보증금" error={errors.deposit} name="deposit">
+        <Field label="보상 기준액" error={errors.deposit} name="deposit">
           <WonInput value={deposit} onChange={setDeposit} placeholder="30,000" />
         </Field>
       </div>
-      <p className="-mt-5 text-[12px] text-neutral-500">보증금은 파손·미반납에 대비해 받아요. 보통 옷 가격 정도로 정해요.</p>
+      <p className="-mt-5 text-[12px] leading-relaxed text-neutral-500">미리 받지 않아요. 분실·파손이 확인될 때만 이 금액 안에서 빌린 사람의 결제수단으로 청구돼요. 보통 옷 가격 정도로 정해요.</p>
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="최소 대여일" error={errors.minDays} name="minDays">
@@ -308,7 +308,7 @@ function friendly(field: string, msg: string): string {
     category: "카테고리를 골라주세요.",
     size: "사이즈를 골라주세요.",
     pricePerDay: "대여료를 숫자로 입력해 주세요.",
-    deposit: "보증금을 숫자로 입력해 주세요.",
+    deposit: "보상 기준액을 숫자로 입력해 주세요.",
     handoffMethods: "전달 방법을 하나 이상 골라주세요.",
     maxDays: "대여일은 1~60일 사이로 입력해 주세요.",
   };

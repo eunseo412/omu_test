@@ -1,4 +1,5 @@
 import type { ProofShot, RentalStatus } from "@omu/core";
+import type { PaymentStatus } from "@/features/payments/config";
 
 export type Party = { id: string; handle: string; displayName: string; avatarUrl: string | null; trustTemp: number };
 
@@ -39,7 +40,8 @@ export type RentalDetail = {
   handoffMethod: string;
   pricePerDay: number;
   feeTotal: number;
-  deposit: number;
+  deposit: number; // 분실·파손 시 보상 기준액 (미리 받지 않음)
+  paymentStatus: PaymentStatus;
   item: { id: string; title: string; imageUrl: string | null };
   counterpart: Party;
   events: RentalEvent[];
